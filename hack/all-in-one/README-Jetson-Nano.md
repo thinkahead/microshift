@@ -38,7 +38,7 @@ rm -rf /var/lib/microshift
 systemctl start microshift
 ```
 
-Still in the microshift container, download helm and run the mysql server in a container with pv and a mysql client container
+Still in the microshift container, download helm and run the mysql server in a container with hostpath persistent volume and a mysql client container
 ```
 # Install helm
 curl -o helm-v3.5.2-linux-arm64.tar.gz  https://get.helm.sh/helm-v3.5.2-linux-arm64.tar.gz
@@ -57,6 +57,7 @@ helm list
 
 # Remember to delete the /var/hpvolumes/mysql if it already exists (otherwise it will use old password from previous run)
 rm -rf /var/hpvolumes/mysql
+# Create the persistent volume
 kubectl apply -f hostpathpv.yaml
 
 # hostpathpv.yaml
@@ -75,7 +76,8 @@ spec:
     path: "/var/hpvolumes/mysql"
 ...
 
-kubectl get pods -n default
+# Wait for the pod to be Running
+kubectl get pods -n default -w
 
 # Start a client container and install the mysql client within it and login using the my-user userid
 kubectl run -i --tty ubuntu --image=ubuntu:18.04 --restart=Never -- bash -il
@@ -88,6 +90,61 @@ mysql -h$ipofmysqlserver -umy-user -pmy-password
 cat /etc/hosts # Find the ip of mysql server
 mysql -uroot -psecretpassword
 update mysql.user set host='%' where user='root';
+```
+
+Another example with nginx
+```
+Create the file nginx.yaml
+
+# nginx.yaml
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  selector:
+    matchLabels:
+      app: nginx
+  replicas: 2 # tells deployment to run 2 pods matching the template
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginxinc/nginx-unprivileged:alpine
+        ports:
+        - containerPort: 8080
+        # resource required for hpa
+        resources:
+          requests:
+            memory: 128M
+            cpu: 125m
+          limits:
+            memory: 1024M
+            cpu: 1000m
+---
+apiVersion: v1
+kind: Service
+metadata:
+ name: nginx-svc
+ labels:
+   app: nginx
+spec:
+ type: NodePort
+ ports:
+ - port: 8080
+   nodePort: 30080
+ selector:
+   app: nginx
+...
+
+# Create the deployment and service. Test it.
+kubectl apply -f nginx.yaml
+kubectl get svc # see the port 8080:30080
+curl localhost:30080
 ```
 
 Accessing the cluster using API https://kubernetes.io/docs/tasks/administer-cluster/access-cluster-api/
