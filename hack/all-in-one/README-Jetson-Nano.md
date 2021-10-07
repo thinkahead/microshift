@@ -6,6 +6,13 @@ firewall-cmd --zone=public --permanent --add-port=9443/tcp
 firewall-cmd --reload
 ```
 
+Build microshift binary. The binaries from https://quay.io/repository/microshift/microshift?tab=tags did not work for arm64. I got the error with iptables with the quay.io/microshift/microshift:4.7.0-0.microshift-2021-08-31-224727-aio-linux-arm64:
+```
+Oct 07 14:38:21 microshift.example.com microshift[78]: E1007 14:38:21.128486      78 proxier.go:874] Failed to ensure that filter chain KUBE-EXTERNAL-SERVICES exists: error creating chain "KUBE-EXTERNAL-SERVICES": exit status 4: iptables v1.8.4 (nf_tables): Could not fetch rule set generation id: Invalid argument
+
+Oct 07 14:38:22 microshift.example.com microshift[78]: W1007 14:38:22.321539      78 iptables.go:564] Could not set up iptables canary mangle/KUBE-PROXY-CANARY: error creating chain "KUBE-PROXY-CANARY": exit status 4: iptables v1.8.4 (nf_tables): Could not fetch rule set generation id: Invalid argument
+```
+
 We start the microshift container and exec into it
 ```
 docker run -d --rm --name microshift -h microshift.example.com --privileged -v /lib/modules:/lib/modules -v microshift-data:/var/lib  -p 9443:6443 microshift
@@ -71,10 +78,10 @@ export CLUSTER_NAME="some_server_name"
 # Point to the API server referring the cluster name
 APISERVER=$(kubectl config view -o jsonpath="{.clusters[?(@.name==\"$CLUSTER_NAME\")].cluster.server}")
 # It returns multiple tokens, so does not work
-# Gets the token value
-https://stackoverflow.com/questions/15490728/decode-base64-invalid-input/15490765
 TOKEN=$(kubectl get secrets -o jsonpath="{.items[?(@.metadata.annotations['kubernetes\.io/service-account\.name']=='default')].data.token}"|base64 -d)
+# Get the token value
 kubectl get secrets default-token-g99v6 -o yaml
+# Decode it ands set the TOKEN
 # Explore the API with TOKEN
 curl -X GET $APISERVER/api --header "Authorization: Bearer $TOKEN" --insecure
 ```
