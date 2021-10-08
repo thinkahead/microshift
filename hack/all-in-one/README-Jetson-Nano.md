@@ -223,8 +223,9 @@ crictl stopp $podid # Stop the pod
 crictl rmp $podid # Remove the pod
 ```
 
-### Run microshift
+### Run Microshift
 ```
+mkdir /var/hpvolumes # used by hostpath-provisioner
 cp /root/microshift /usr/local/bin/.
 
 mkdir /usr/lib/systemd/system
@@ -254,7 +255,17 @@ if [ -f $HOME/.kube/config ]; then
     mv $HOME/.kube/config $HOME/.kube/config.orig
 fi
 KUBECONFIG=/var/lib/microshift/resources/kubeadmin/kubeconfig:$HOME/.kube/config.orig  /usr/local/bin/kubectl config view --flatten > $HOME/.kube/config
+```
 
+### Errors
+#### The node was low on resource: [DiskPressure]
+If you have less than 10% free disk space on the CF card, the kubevirt-hostpath-provisioner pod may get evicted. This will happen on the 32GB CF card if the disk space cannot be reclaimed after deleting usused images. You will need to create space by deleting some github sources we had downloaded for installation.
+```
+rm -rf /root/.cache/go-build # Cleanup
+# You can check the eviction events as follows
+kubectl describe nodes
+kubectl get events --field-selector involvedObject.kind=Node
+kubectl delete events --field-selector involvedObject.kind=Node
 ```
 
 ## Running Microshift in docker container on Ubuntu 18.04 - Jetson Nano
@@ -264,7 +275,7 @@ firewall-cmd --zone=public --permanent --add-port=9443/tcp
 firewall-cmd --reload
 ```
 
-Build microshift binary as mentioned in previos section. The arm64 images and microshift binaries within images from https://quay.io/repository/microshift/microshift?tab=tags did not work in Docker on Jetson Nano. I got the error with iptables with the quay.io/microshift/microshift:4.7.0-0.microshift-2021-08-31-224727-aio-linux-arm64 when the container was started and the pods within the microshift container stayed in ContainerCreating state:
+Build microshift binary as mentioned in previous section. You will copy the microshift binary for creating the image. The arm64 images and microshift binaries within images from https://quay.io/repository/microshift/microshift?tab=tags did not work in Docker on Jetson Nano. I got the error with iptables with the quay.io/microshift/microshift:4.7.0-0.microshift-2021-08-31-224727-aio-linux-arm64 when the container was started and the pods within the microshift container stayed in ContainerCreating state:
 ```
 Oct 07 14:38:21 microshift.example.com microshift[78]: E1007 14:38:21.128486      78 proxier.go:874] Failed to ensure that filter chain KUBE-EXTERNAL-SERVICES exists: error creating chain "KUBE-EXTERNAL-SERVICES": exit status 4: iptables v1.8.4 (nf_tables): Could not fetch rule set generation id: Invalid argument
 
