@@ -21,13 +21,14 @@ https://ngc.nvidia.com/catalog/containers/nvidia:dli:dli-nano-ai
 ```
 docker run --runtime nvidia -it --rm --network host --volume ~/nvdli-data:/nvdli-nano/data --device /dev/video0 nvcr.io/nvidia/dli/dli-nano-ai:v2.0.1-r32.6.1
 ```
-Connect to your Jetson nano ip address and login with pasword dlinano http://192.168.1.205:8888/lab?
+Connect to your Jetson nano ip address and login with pasword dlinano [http://192.168.1.205:8888/lab?](http://192.168.1.205:8888/lab?)
 
-## Build Microshift binary for arm64 on Ubuntu 18.04 - Jetson Nano
+## Install dependencies and build Microshift binary for arm64 on Ubuntu 18.04 - Jetson Nano
 
 ### Install the dependencies
 Run as root
 ```
+# We will not use docker to build any binaries, stop it to reduce memory consumption
 systemctl stop docker;systemctl stop docker.socket
 apt -y install build-essential curl libgpgme-dev pkg-config libseccomp-dev
 
@@ -46,8 +47,11 @@ mkdir $GOPATH
 git clone https://github.com/redhat-et/microshift.git
 cd microshift
 make
-ls microshift # binary in current directory /root/microshift
+ls -las microshift # binary in current directory /root/microshift
+cp microshift /usr/local/bin/.
 rm -rf /root/.cache/go-build # Optional Cleanup
+cd ..
+#rm -rf microshift # You can delete this folder, we have copied the microshift arm64 binary to /usr/local/bin
 ```
 
 ## Running Microshift directly on the Jetson Nano
@@ -67,7 +71,7 @@ curl -L https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/
 rm -f /usr/share/keyrings/libcontainers-crio-archive-keyring.gpg
 curl -L https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable:/cri-o:/$CRIOVERSION/$OS/Release.key | sudo gpg --dearmor -o $KEYRINGS_DIR/libcontainers-crio-archive-keyring.gpg
 
-apt install -y  btrfs-tools containers-common libassuan-dev libdevmapper-dev libglib2.0-dev libc6-dev libgpgme-dev libgpg-error-dev libseccomp-dev libsystemd-dev libselinux1-dev pkg-config  go-md2man libudev-dev software-properties-common gcc make curl
+apt install -y btrfs-tools containers-common libassuan-dev libdevmapper-dev libglib2.0-dev libc6-dev libgpgme-dev libgpg-error-dev libseccomp-dev libsystemd-dev libselinux1-dev pkg-config go-md2man libudev-dev software-properties-common gcc make curl
 ls /usr/include/gpgme.h
 apt-get install -y policycoreutils-python-utils conntrack firewalld
 ```
@@ -248,18 +252,19 @@ sed -i 's|^ExecStart=microshift|ExecStart=/usr/local/bin/microshift|' /usr/lib/s
 systemctl daemon-reload
 systemctl start microshift
 systemctl status microshift
-journalctl -u microshift -f
+journalctl -u microshift -f # Ctrl-C to break
 
 mkdir -p $HOME/.kube
 if [ -f $HOME/.kube/config ]; then
     mv $HOME/.kube/config $HOME/.kube/config.orig
 fi
-KUBECONFIG=/var/lib/microshift/resources/kubeadmin/kubeconfig:$HOME/.kube/config.orig  /usr/local/bin/kubectl config view --flatten > $HOME/.kube/config
+KUBECONFIG=/var/lib/microshift/resources/kubeadmin/kubeconfig:$HOME/.kube/config.orig /usr/local/bin/kubectl config view --flatten > $HOME/.kube/config
+watch "kubectl get nodes;kubectl get pods -A;crictl pods;crictl images"
 ```
 
 ### Errors
 #### The node was low on resource: [DiskPressure]
-If you have less than 10% free disk space on the CF card, the kubevirt-hostpath-provisioner pod may get evicted. This will happen on the 32GB CF card if the disk space cannot be reclaimed after deleting usused images. You will need to create space by deleting some github sources we had downloaded for installation.
+If you have less than 10% free disk space on the microsd card, the kubevirt-hostpath-provisioner pod may get evicted. This will happen on the 32GB CF card if the disk space cannot be reclaimed after deleting usused images. You will need to create space by deleting some github sources we had downloaded for installation.
 ```
 rm -rf /root/.cache/go-build # Cleanup
 # You can check the eviction events as follows
@@ -293,7 +298,7 @@ docker build --build-arg HOST=ubuntu18 -t microshift .
 
 ### Start the microshift container and exec into it
 ```
-docker run -d --rm --name microshift -h microshift.example.com --privileged -v /lib/modules:/lib/modules -v microshift-data:/var/lib  -p 9443:6443 microshift
+docker run -d --rm --name microshift -h microshift.example.com --privileged -v /lib/modules:/lib/modules -v microshift-data:/var/lib -p 9443:6443 microshift
 docker exec -it microshift bash
 export KUBECONFIG=/var/lib/microshift/resources/kubeadmin/kubeconfig 
 watch "kubectl get nodes;kubectl get pods -A;crictl images;crictl pods" # wait for 2 minutes
