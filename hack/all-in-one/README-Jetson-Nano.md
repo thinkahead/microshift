@@ -21,12 +21,14 @@ https://ngc.nvidia.com/catalog/containers/nvidia:dli:dli-nano-ai
 ```
 docker run --runtime nvidia -it --rm --network host --volume ~/nvdli-data:/nvdli-nano/data --device /dev/video0 nvcr.io/nvidia/dli/dli-nano-ai:v2.0.1-r32.6.1
 ```
+Connect to your Jetson nano ip address and login with pasword dlinano http://192.168.1.205:8888/lab?
 
 ## Build Microshift binary for arm64 on Ubuntu 18.04 - Jetson Nano
 
 ### Install the dependencies
 Run as root
 ```
+systemctl stop docker;systemctl stop docker.socket
 apt -y install build-essential curl libgpgme-dev pkg-config libseccomp-dev
 
 # Install golang
@@ -48,29 +50,12 @@ ls microshift # binary in current directory /root/microshift
 ```
 
 ## Running Microshift directly on the Jetson Nano
-Instructions in progress
+Build the Microshift binary as above. The following instructions follow the steps in the install.sh in the microshift directory (you can use that as reference if required).
 
-### Build and Install cri-o
+### Install the dependencies
 ```
-git clone https://github.com/cri-o/cri-o.git
-cd cri-o/
-#apt -y install golang-github-proglottis-gpgme-dev
-#apt-get install gpgme-dev
-ls /usr/include/gpgme.h
-apt-get install -y policycoreutils-python-utils conntrack firewalld
-systemctl enable firewalld --now
-firewall-cmd --zone=public --permanent --add-port=6443/tcp
-firewall-cmd --zone=public --permanent --add-port=30000-32767/tcp
-firewall-cmd --zone=public --permanent --add-port=2379-2380/tcp
-firewall-cmd --zone=public --add-masquerade --permanent
-firewall-cmd --zone=public --add-port=10250/tcp --permanent
-firewall-cmd --zone=public --add-port=10251/tcp --permanent
-firewall-cmd --zone=public --add-port=8888/tcp --permanent $ For Jupyterlab Course
-firewall-cmd --permanent --zone=trusted --add-source=10.42.0.0/16
-firewall-cmd --reload
-
 OS_VERSION=18.04
-CRIOVERSION=1.20
+CRIOVERSION=1.22
 OS=xUbuntu_$OS_VERSION
 KEYRINGS_DIR=/usr/share/keyrings
 echo "deb [signed-by=$KEYRINGS_DIR/libcontainers-archive-keyring.gpg] https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/$OS/ /" | sudo tee /etc/apt/sources.list.d/devel:kubic:libcontainers:stable.list > /dev/null
@@ -81,16 +66,194 @@ curl -L https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/
 rm -f /usr/share/keyrings/libcontainers-crio-archive-keyring.gpg
 curl -L https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable:/cri-o:/$CRIOVERSION/$OS/Release.key | sudo gpg --dearmor -o $KEYRINGS_DIR/libcontainers-crio-archive-keyring.gpg
 
-apt-get update -y
-apt-get install -y cri-o cri-o-runc cri-tools containernetworking-plugins
+apt install -y  btrfs-tools containers-common libassuan-dev libdevmapper-dev libglib2.0-dev libc6-dev libgpgme-dev libgpg-error-dev libseccomp-dev libsystemd-dev libselinux1-dev pkg-config  go-md2man libudev-dev software-properties-common gcc make curl
+ls /usr/include/gpgme.h
+apt-get install -y policycoreutils-python-utils conntrack firewalld
+```
 
+### Build conmon, cri-o, crictl and containernetworking plugins. Get the kubeconfig for arm64
+```
+git clone https://github.com/containers/conmon
+cd conmon
+make
+make install
+cd ..
+rm -rf conmon
+
+git clone https://github.com/cri-o/cri-o.git
+cd cri-o/
+make
+make install
+crio version
 make install.config
 make install.systemd
+cd ..
+rm -rf cri-o
+
 systemctl daemon-reload
 systemctl enable crio
-systemctl start crio
+cat /etc/crio/crio.conf
+rm -f /etc/crio/crio.conf # I think you must delete this, the file is empty anyway
+
+# Create the /etc/crio/crio.conf.d/01-crio-runc.conf
+mkdir /etc/crio/crio.conf.d
+cat << EOF > /etc/crio/crio.conf.d/01-crio-runc.conf
+[crio.runtime.runtimes.runc]
+runtime_path = "/usr/sbin/runc"
+runtime_type = "oci"
+runtime_root = "/run/runc"
+EOF
+
+git clone https://github.com/kubernetes-sigs/cri-tools.git
+cd cri-tools
+make
+make install
+cd ..
+rm -rf cri-tools
+
+# When does /etc/containers/storage.conf get created? If it is not created here, this step may come later
+# We need to remove the options for mountopt from /etc/containers/storage.conf - They cause the error "creating overlay mount to /var/lib/containers/storage/overlay/.../merged, mount_data="nodev,metacopy=on,lowerdir=/var/lib/containers/storage/overlay...": invalid argument
+sed -i "s/^\(mountopt.*\)/#\\1/" containers/storage.conf
+
+# Get kubectl
+ARCH=arm64
+curl -LO "https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/$ARCH/kubectl"
+chmod +x kubectl
+mv kubectl /usr/local/bin
+
+git clone https://github.com/containernetworking/plugins.git
+cd plugins/
+./build_linux.sh
+cp bin/* /opt/cni/bin
+cd ..
+```
+
+### Setup firewalld
+```
+systemctl enable firewalld --now
+firewall-cmd --zone=public --permanent --add-port=6443/tcp
+firewall-cmd --zone=public --permanent --add-port=30000-32767/tcp
+firewall-cmd --zone=public --permanent --add-port=2379-2380/tcp
+firewall-cmd --zone=public --add-masquerade --permanent
+firewall-cmd --zone=public --add-port=10250/tcp --permanent
+firewall-cmd --zone=public --add-port=10251/tcp --permanent
+firewall-cmd --zone=public --add-port=8888/tcp --permanent $ For Jupyterlab Course
+firewall-cmd --permanent --zone=trusted --add-source=10.42.0.0/16
+firewall-cmd --reload
+```
+
+### CRI-O config to match Microshift networking values
+```
+sh -c 'cat << EOF > /etc/cni/net.d/100-crio-bridge.conf
+{
+    "cniVersion": "0.4.0",
+    "name": "crio",
+    "type": "bridge",
+    "bridge": "cni0",
+    "isGateway": true,
+    "ipMasq": true,
+    "hairpinMode": true,
+    "ipam": {
+        "type": "host-local",
+        "routes": [
+            { "dst": "0.0.0.0/0" }
+        ],
+        "ranges": [
+            [{ "subnet": "10.42.0.0/24" }]
+        ]
+    }
+}
+EOF'
+
+systemctl restart crio
 systemctl status crio
-journalctl -u crio -f
+journalctl -u crio -f # Ctrl-C to stop the logs
+```
+
+### Testing cri-o with nginx (optional)
+```
+cat >nginx.json<<EOF
+{
+  "metadata": {
+    "name": "nginx-container",
+    "attempt": 1
+  },
+  "image": {
+    "image": "nginx"
+  },
+  "log_path": "nginx.log",
+  "linux": {
+    "security_context": {
+      "namespace_options": {}
+    }
+  }
+}
+EOF
+
+cat >net-pod.json<<EOF
+{
+  "metadata": {
+    "name": "networking",
+    "uid": "networking-pod-uid",
+    "namespace": "default",
+    "attempt": 1
+  },
+  "hostname": "networking",
+  "port_mappings": [
+    {
+      "container_port": 80
+    }
+  ],
+  "log_directory": "/tmp/net-pod",
+  "linux": {}
+}
+EOF
+
+crictl runp net-pod.json
+crictl pods # Get the podid
+crictl create $podid nginx.json net-pod.json # The container for nginx will go into Created state
+crictl ps -a # List containers, get the containerid
+crictl start $containerid # Go to Running state
+crictl logs $containerid
+crictl stop $containerid # Go to Exited state
+crictl ps -a
+crictl rm $containerid
+crictl stopp $podid # Stop the pod
+crictl rmp $podid # Remove the pod
+```
+
+### Run microshift
+```
+cp /root/microshift /usr/local/bin/.
+
+mkdir /usr/lib/systemd/system
+cat << EOF | sudo tee /usr/lib/systemd/system/microshift.service
+[Unit]
+Description=Microshift
+After=crio.service
+
+[Service]
+WorkingDirectory=/usr/local/bin/
+ExecStart=microshift run
+Restart=always
+User=root
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+sed -i 's|^ExecStart=microshift|ExecStart=/usr/local/bin/microshift|' /usr/lib/systemd/system/microshift.service
+systemctl daemon-reload
+systemctl start microshift
+systemctl status microshift
+journalctl -u microshift -f
+
+mkdir -p $HOME/.kube
+if [ -f $HOME/.kube/config ]; then
+    mv $HOME/.kube/config $HOME/.kube/config.orig
+fi
+KUBECONFIG=/var/lib/microshift/resources/kubeadmin/kubeconfig:$HOME/.kube/config.orig  /usr/local/bin/kubectl config view --flatten > $HOME/.kube/config
+
 ```
 
 ## Running Microshift in docker container on Ubuntu 18.04 - Jetson Nano
@@ -264,4 +427,7 @@ kubectl get secrets default-token-g99v6 -o yaml
 # Explore the API with TOKEN
 curl -X GET $APISERVER/api --header "Authorization: Bearer $TOKEN" --insecure
 ```
+
+## Links
+Microshift end to end provisioning demo https://www.youtube.com/watch?v=QOiB8NExtA4
 
