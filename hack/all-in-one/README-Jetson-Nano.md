@@ -47,6 +47,7 @@ git clone https://github.com/redhat-et/microshift.git
 cd microshift
 make
 ls microshift # binary in current directory /root/microshift
+rm -rf /root/.cache/go-build # Optional Cleanup
 ```
 
 ## Running Microshift directly on the Jetson Nano
@@ -95,7 +96,7 @@ systemctl enable crio
 cat /etc/crio/crio.conf
 rm -f /etc/crio/crio.conf # I think you must delete this, the file is empty anyway
 
-# Create the /etc/crio/crio.conf.d/01-crio-runc.conf
+# Create the /etc/crio/crio.conf.d/01-crio-runc.conf - Is this required?
 mkdir /etc/crio/crio.conf.d
 cat << EOF > /etc/crio/crio.conf.d/01-crio-runc.conf
 [crio.runtime.runtimes.runc]
