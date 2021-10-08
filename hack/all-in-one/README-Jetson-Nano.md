@@ -1,5 +1,5 @@
 # Microshift on Jetson Nano
-We can run Microshift directly on Jetson Nano or within a Docker container on Jetson Nano. Both options are described.
+We can run Microshift directly on Ubuntu 18.04 Jetson Nano or within a Docker RHEL8 container on Jetson Nano, the latter is easier. Both options are described.
 
 ## Update and Test the Jetson Nano
 ### Updating your Jetson nano to new Minor Release
