@@ -1,5 +1,5 @@
 # Microshift on Jetson Nano
-We can run Microshift directly on Ubuntu 18.04 Jetson Nano or within a Docker RHEL8 container on Jetson Nano, the latter is easier. Both options are described.
+We can run Microshift directly on Ubuntu 18.04 Jetson Nano or within a Docker RHEL8 container on Jetson Nano, the latter is easier. Both options are described. I suggest using the 128GB CF card so that you have sufficient space for experimentation, but Microshift works with the 32GB card.
 
 ## Update and Test the Jetson Nano
 ### Updating your Jetson nano to new Minor Release
@@ -24,12 +24,26 @@ docker run --runtime nvidia -it --rm --network host --volume ~/nvdli-data:/nvdli
 Connect to your Jetson nano ip address and login with pasword dlinano [http://192.168.1.205:8888/lab?](http://192.168.1.205:8888/lab?)
 
 ## Install dependencies and build Microshift binary for arm64 on Ubuntu 18.04 - Jetson Nano
+You may either copy the microshift binary from the docker image I have created for the jetson nano or build it.
+
+### Copy the Microshift binary from docker image
+```
+dlinano@jetson-nano:~$ id=$(docker create docker.io/karve/microshift:arm64-jetsonnano)
+dlinano@jetson-nano:~$ docker cp $id:/usr/local/bin/microshift /tmp/microshift
+dlinano@jetson-nano:~$ /tmp/microshift version
+Microshift Version: 4.7.0-0.microshift-2021-08-31-224727-52-g87d6da6
+Base OKD Version: 4.7.0-0.okd-2021-06-13-090745
+dlinano@jetson-nano:~$ docker rm -v $id
+```
 
 ### Install the dependencies
 Run as root
 ```
 # We will not use docker to build any binaries, stop it to reduce memory consumption
+# Delete any docker container and images
+docker rmi nvcr.io/nvidia/dli/dli-nano-ai:v2.0.1-r32.6.1
 systemctl stop docker;systemctl stop docker.socket
+
 apt -y install build-essential curl libgpgme-dev pkg-config libseccomp-dev
 
 # Install golang
@@ -41,6 +55,7 @@ export GOPATH=/root/go
 # Add above 2 lines to /root/.bashrc
 mkdir $GOPATH
 ```
+
 
 ### Build the Microshift binary
 ```
@@ -289,6 +304,7 @@ Oct 07 14:38:22 microshift.example.com microshift[78]: W1007 14:38:22.321539    
 
 ### Build the Microshift docker image on Jetson Nano
 ```
+systemctl start docker
 git clone https://github.com/thinkahead/microshift.git
 cd microshift/hack/all-in-one
 cp /root/microshift/microshift . # copy the microshift binary built earlier to this folder
