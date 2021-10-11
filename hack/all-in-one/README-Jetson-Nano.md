@@ -396,6 +396,7 @@ docker build --build-arg HOST=ubuntu18 -t microshift .
 
 ### Start the microshift container and exec into it
 ```
+docker volume rm microshift-data;docker volume create microshift-data
 docker run -d --rm --name microshift -h microshift.example.com --privileged -v /lib/modules:/lib/modules -v microshift-data:/var/lib -p 9443:6443 microshift # or use the docker.io/karve/microshift:arm64-jetsonnano
 docker exec -it microshift bash
 export KUBECONFIG=/var/lib/microshift/resources/kubeadmin/kubeconfig 
@@ -419,7 +420,7 @@ Oct 07 14:38:21 microshift.example.com microshift[78]: E1007 14:38:21.128486    
 
 Oct 07 14:38:22 microshift.example.com microshift[78]: W1007 14:38:22.321539      78 iptables.go:564] Could not set up iptables canary mangle/KUBE-PROXY-CANARY: error creating chain "KUBE-PROXY-CANARY": exit status 4: iptables v1.8.4 (nf_tables): Could not fetch rule set generation id: Invalid argument
 ```
-I don't see the above iptables problems now on Oct 11, 2021. The iptables rpms in the image look correct now. Previously there was a mismatch between rhel8 and fedora on my setup. There is however still the "Invalid argument" problem with storage.conf. Let's fix it.
+I don't see the above iptables problems now on Oct 11, 2021. The iptables rpms in the image look correct now (1.8.7-3). Previously there was a mismatch between rhel8 and fedora on my setup. There is however still the "Invalid argument" problem with storage.conf. Let's fix it.
 - The yum install lines below were for the iptables "Invalid argument" that may not be required, therefore commented out.
 - The storage.conf "Invalid argument" problem is fixed by commenting out the mountopt line with the arguments.
 ```
