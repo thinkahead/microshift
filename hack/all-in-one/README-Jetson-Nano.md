@@ -14,6 +14,7 @@ deb https://repo.download.nvidia.com/jetson/t210 r32.6 main
 
 apt update
 apt dist-upgrade
+dpkg-reconfigure tzdata # Select your timezone
 ```
 
 ### DLI "Getting Started with AI on Jetson Nano" Course Environment Container
@@ -27,6 +28,7 @@ Connect to your Jetson nano ip address and login with pasword dlinano [http://19
 You may either copy the microshift binary from the docker image I have created for the jetson nano or build it.
 
 ### Copy the Microshift binary from docker image
+If you want to build your own microshift binary for arm64 Jetson Nano, you may skip this step.
 ```
 dlinano@jetson-nano:~$ id=$(docker create docker.io/karve/microshift:arm64-jetsonnano)
 dlinano@jetson-nano:~$ docker cp $id:/usr/local/bin/microshift /usr/local/bin/microshift
@@ -57,6 +59,7 @@ mkdir $GOPATH
 ```
 
 ### Build the Microshift binary
+Build the binary on your Jetson Nano. You may skip this if you copied the binary from the docker image earlier.
 ```
 git clone https://github.com/redhat-et/microshift.git
 cd microshift
@@ -312,6 +315,7 @@ Oct 07 14:38:22 microshift.example.com microshift[78]: W1007 14:38:22.321539    
 ```
 
 ### Build the Microshift docker image on Jetson Nano
+Build the microshift image on your Jetson Nano. You may skip this if you pulled the docker image earlier.
 ```
 systemctl start docker
 git clone https://github.com/thinkahead/microshift.git
@@ -323,7 +327,7 @@ docker build --build-arg HOST=ubuntu18 -t microshift .
 
 ### Start the microshift container and exec into it
 ```
-docker run -d --rm --name microshift -h microshift.example.com --privileged -v /lib/modules:/lib/modules -v microshift-data:/var/lib -p 9443:6443 microshift
+docker run -d --rm --name microshift -h microshift.example.com --privileged -v /lib/modules:/lib/modules -v microshift-data:/var/lib -p 9443:6443 microshift # or use the docker.io/karve/microshift:arm64-jetsonnano
 docker exec -it microshift bash
 export KUBECONFIG=/var/lib/microshift/resources/kubeadmin/kubeconfig 
 watch "kubectl get nodes;kubectl get pods -A;crictl images;crictl pods" # wait for 2 minutes
