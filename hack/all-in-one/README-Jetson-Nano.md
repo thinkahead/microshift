@@ -1,5 +1,5 @@
 # Microshift on Jetson Nano
-We can run Microshift directly on Ubuntu 18.04 Jetson Nano or within a Docker RHEL8 container on Jetson Nano, the latter is easier. Both options are described. I suggest using the 128GB CF card so that you have sufficient space for experimentation, but Microshift works with the 32GB card.
+We can run Microshift directly on Ubuntu 18.04 Jetson Nano or within a Docker RHEL8 container on Jetson Nano, the latter is easier. Both options are described. I suggest using the 128GB microSDXC card so that you have sufficient space for experimentation, but Microshift works with the 32GB card.
 
 ## Update and Test the Jetson Nano
 ### Updating your Jetson nano to new Minor Release
@@ -29,8 +29,8 @@ You may either copy the microshift binary from the docker image I have created f
 ### Copy the Microshift binary from docker image
 ```
 dlinano@jetson-nano:~$ id=$(docker create docker.io/karve/microshift:arm64-jetsonnano)
-dlinano@jetson-nano:~$ docker cp $id:/usr/local/bin/microshift /tmp/microshift
-dlinano@jetson-nano:~$ /tmp/microshift version
+dlinano@jetson-nano:~$ docker cp $id:/usr/local/bin/microshift /usr/local/bin/microshift
+dlinano@jetson-nano:~$ microshift version
 Microshift Version: 4.7.0-0.microshift-2021-08-31-224727-52-g87d6da6
 Base OKD Version: 4.7.0-0.okd-2021-06-13-090745
 dlinano@jetson-nano:~$ docker rm -v $id
@@ -40,7 +40,7 @@ dlinano@jetson-nano:~$ docker rm -v $id
 Run as root
 ```
 # We will not use docker to build any binaries, stop it to reduce memory consumption
-# Delete any docker container and images
+# Delete any docker container and images if you are using a 32GB microSDXC to save space
 docker rmi nvcr.io/nvidia/dli/dli-nano-ai:v2.0.1-r32.6.1
 systemctl stop docker;systemctl stop docker.socket
 
@@ -55,7 +55,6 @@ export GOPATH=/root/go
 # Add above 2 lines to /root/.bashrc
 mkdir $GOPATH
 ```
-
 
 ### Build the Microshift binary
 ```
@@ -90,8 +89,10 @@ apt install -y btrfs-tools containers-common libassuan-dev libdevmapper-dev libg
 ls /usr/include/gpgme.h
 apt-get install -y policycoreutils-python-utils conntrack firewalld
 ```
+You canot install cri-o from the kubic above, it needs to be built for Ubuntu 18.04 for arm64.
 
 ### Build conmon, cri-o, crictl and containernetworking plugins. Get the kubeconfig for arm64
+Reference https://github.com/cri-o/cri-o/blob/main/install.md#installing-crio
 ```
 git clone https://github.com/containers/conmon
 cd conmon
@@ -132,7 +133,8 @@ cd ..
 rm -rf cri-tools
 
 # When does /etc/containers/storage.conf get created? If it is not created here, this step may come later
-# We need to remove the options for mountopt from /etc/containers/storage.conf - They cause the error "creating overlay mount to /var/lib/containers/storage/overlay/.../merged, mount_data="nodev,metacopy=on,lowerdir=/var/lib/containers/storage/overlay...": invalid argument
+# We need to remove the options for mountopt from /etc/containers/storage.conf to the invalid argument error
+# "creating overlay mount to /var/lib/containers/storage/overlay/.../merged, mount_data="nodev,metacopy=on,lowerdir=/var/lib/containers/storage/overlay...": invalid argument
 sed -i "s/^\(mountopt.*\)/#\\1/" containers/storage.conf
 
 # Get kubectl
@@ -141,6 +143,7 @@ curl -LO "https://storage.googleapis.com/kubernetes-release/release/$(curl -s ht
 chmod +x kubectl
 mv kubectl /usr/local/bin
 
+# We use the type bridge
 git clone https://github.com/containernetworking/plugins.git
 cd plugins/
 ./build_linux.sh
@@ -191,6 +194,7 @@ journalctl -u crio -f # Ctrl-C to stop the logs
 ```
 
 ### Testing cri-o with nginx (optional)
+Use this section to learn how to create/delete a pod with container using cri-o
 ```
 cat >nginx.json<<EOF
 {
@@ -245,7 +249,7 @@ crictl rmp $podid # Remove the pod
 ### Run Microshift
 ```
 mkdir /var/hpvolumes # used by hostpath-provisioner
-cp /root/microshift /usr/local/bin/.
+cp /root/microshift /usr/local/bin/. # If not already done
 
 mkdir /usr/lib/systemd/system
 cat << EOF | sudo tee /usr/lib/systemd/system/microshift.service
@@ -279,9 +283,9 @@ watch "kubectl get nodes;kubectl get pods -A;crictl pods;crictl images"
 
 ### Errors
 #### The node was low on resource: [DiskPressure]
-If you have less than 10% free disk space on the microsd card, the kubevirt-hostpath-provisioner pod may get evicted. This will happen on the 32GB CF card if the disk space cannot be reclaimed after deleting usused images. You will need to create space by deleting some github sources we had downloaded for installation.
+If you have less than 10% free disk space on the microSDXC card, the kubevirt-hostpath-provisioner pod may get evicted. This will happen on the 32GB microSDXC card if the disk space cannot be reclaimed after deleting usused images. You will need to create space by deleting some github sources we had downloaded for installation.
 ```
-rm -rf /root/.cache/go-build # Cleanup
+rm -rf /root/.cache/go-build # Cleanup to get space on microSDXC card
 # You can check the eviction events as follows
 kubectl describe nodes
 kubectl get events --field-selector involvedObject.kind=Node
