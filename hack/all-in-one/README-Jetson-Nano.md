@@ -365,6 +365,7 @@ crictl rmi --all
 pkill -9 conmon
 pkill -9 pause
 rm -rf /var/lib/microshift
+#rm -rf /var/lib/containers/*
 systemctl stop crio
 ```
 
@@ -375,12 +376,7 @@ firewall-cmd --zone=public --permanent --add-port=9443/tcp
 firewall-cmd --reload
 ```
 
-Build microshift binary as mentioned in previous section. You will copy the microshift binary for creating the image. The arm64 images and microshift binaries within images from https://quay.io/repository/microshift/microshift?tab=tags did not work in Docker on Jetson Nano. I got the error with iptables with the quay.io/microshift/microshift:4.7.0-0.microshift-2021-08-31-224727-aio-linux-arm64 when the container was started and the pods within the microshift container stayed in ContainerCreating state:
-```
-Oct 07 14:38:21 microshift.example.com microshift[78]: E1007 14:38:21.128486      78 proxier.go:874] Failed to ensure that filter chain KUBE-EXTERNAL-SERVICES exists: error creating chain "KUBE-EXTERNAL-SERVICES": exit status 4: iptables v1.8.4 (nf_tables): Could not fetch rule set generation id: Invalid argument
-
-Oct 07 14:38:22 microshift.example.com microshift[78]: W1007 14:38:22.321539      78 iptables.go:564] Could not set up iptables canary mangle/KUBE-PROXY-CANARY: error creating chain "KUBE-PROXY-CANARY": exit status 4: iptables v1.8.4 (nf_tables): Could not fetch rule set generation id: Invalid argument
-```
+Build microshift binary as mentioned in previous section. You will copy the microshift binary for creating the image.
 
 ### Build the Microshift docker image on Jetson Nano
 Build the microshift image on your Jetson Nano. You may skip this if you pulled the docker image earlier.
@@ -408,6 +404,33 @@ crictl rmi --all
 pkill -9 conmon
 pkill -9 pause
 rm -rf /var/lib/microshift
+systemctl start microshift
+```
+
+### Use the prebuild Microshift image quay.io/microshift/microshift:4.7.0-0.microshift-2021-08-31-224727-aio-linux-arm64
+The arm64 images and microshift binaries within images from https://quay.io/repository/microshift/microshift?tab=tags did not work in Docker on Jetson Nano. I got the error with iptables with the quay.io/microshift/microshift:4.7.0-0.microshift-2021-08-31-224727-aio-linux-arm64 when the container was started and the pods within the microshift container stayed in ContainerCreating state:
+```
+Oct 07 14:38:21 microshift.example.com microshift[78]: E1007 14:38:21.128486      78 proxier.go:874] Failed to ensure that filter chain KUBE-EXTERNAL-SERVICES exists: error creating chain "KUBE-EXTERNAL-SERVICES": exit status 4: iptables v1.8.4 (nf_tables): Could not fetch rule set generation id: Invalid argument
+
+Oct 07 14:38:22 microshift.example.com microshift[78]: W1007 14:38:22.321539      78 iptables.go:564] Could not set up iptables canary mangle/KUBE-PROXY-CANARY: error creating chain "KUBE-PROXY-CANARY": exit status 4: iptables v1.8.4 (nf_tables): Could not fetch rule set generation id: Invalid argument
+```
+I don't see the above problems now on Oct 11, 2021
+
+Let's fix it.
+- The yum install lines below were for the iptables "Invalid argument" that may not be required, therefore commented out.
+- The storage.conf "Invalid argument" problem is fixed by comment out the mountopt line.
+```
+docker volume rm microshift-data;docker volume create microshift-data
+docker pull quay.io/microshift/microshift:4.7.0-0.microshift-2021-08-31-224727-aio-linux-arm64
+docker run -d --rm --name microshift -h microshift.example.com --privileged -v /lib/modules:/lib/modules -v microshift-data:/var/lib  -p 6443:6443 26adb2be3852 # quay.io/microshift/microshift:4.7.0-0.microshift-2021-08-31-224727-aio-linux-arm64
+docker exec -it microshift bash
+systemctl stop microshift
+systemctl stop crio
+#yum -y install http://mirror.centos.org/centos/8/BaseOS/aarch64/os/Packages/conntrack-tools-1.4.4-10.el8.aarch64.rpm http://mirror.centos.org/centos/8/BaseOS/aarch64/os/Packages/libnetfilter_cthelper-1.0.0-15.el8.aarch64.rpm http://mirror.centos.org/centos/8/BaseOS/aarch64/os/Packages/libnetfilter_cttimeout-1.0.0-11.el8.aarch64.rpm http://mirror.centos.org/centos/8/BaseOS/aarch64/os/Packages/libnetfilter_queue-1.0.4-3.el8.aarch64.rpm
+#yum -y install https://rpmfind.net/linux/fedora/linux/releases/34/Everything/aarch64/os/Packages/i/iptables-1.8.7-3.fc34.aarch64.rpm https://rpmfind.net/linux/fedora/linux/releases/34/Everything/aarch64/os/Packages/i/iptables-libs-1.8.7-3.fc34.aarch64.rpm https://rpmfind.net/linux/fedora/linux/development/rawhide/Everything/aarch64/os/Packages/g/glibc-2.34.9000-13.fc36.aarch64.rpm https://rpmfind.net/linux/fedora/linux/development/rawhide/Everything/aarch64/os/Packages/g/glibc-common-2.34.9000-13.fc36.aarch64.rpm https://rpmfind.net/linux/fedora/linux/development/rawhide/Everything/aarch64/os/Packages/g/glibc-all-langpacks-2.34.9000-13.fc36.aarch64.rpm https://rpmfind.net/linux/fedora/linux/development/rawhide/Everything/aarch64/os/Packages/g/glibc-minimal-langpack-2.34.9000-13.fc36.aarch64.rpm
+sed -i "s/^\(mountopt.*\)/#\\1/" /etc/containers/storage.conf
+systemctl stop microshift
+systemctl restart crio
 systemctl start microshift
 ```
 
