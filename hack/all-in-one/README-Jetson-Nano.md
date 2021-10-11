@@ -299,6 +299,34 @@ KUBECONFIG=/var/lib/microshift/resources/kubeadmin/kubeconfig:$HOME/.kube/config
 watch "kubectl get nodes;kubectl get pods -A;crictl pods;crictl images"
 ```
 
+### Output when microshift is started properly
+```
+Every 2.0s: kubectl get nodes;kubectl get pods -A;crictl images;crictl pods                                           jetson-nano.example.com: Mon Oct 11 11:59:46 2021
+
+NAME                      STATUS   ROLES    AGE    VERSION
+jetson-nano.example.com   Ready    <none>   6m3s   v1.20.1
+NAMESPACE                       NAME                                  READY   STATUS    RESTARTS   AGE
+kube-system                     kube-flannel-ds-fzfn6                 1/1     Running   0          5m24s
+kubevirt-hostpath-provisioner   kubevirt-hostpath-provisioner-98frt   1/1     Running   0          5m26s
+openshift-dns                   dns-default-bd92w                     3/3     Running   0          5m25s
+openshift-ingress               router-default-79f7dc4c6b-2p4nb       1/1     Running   0          5m25s
+openshift-service-ca            service-ca-58798776fb-b7dkb           1/1     Running   0          5m26s
+IMAGE                                     TAG                 IMAGE ID            SIZE
+k8s.gcr.io/pause                          3.6                 7d46a07936af9       492kB
+quay.io/microshift/coredns                1.6.9               2e234fad5a864       264MB
+quay.io/microshift/flannel                v0.14.0             996759f548df5       149MB
+quay.io/microshift/hostpath-provisioner   v0.9.0              e96859fbded4f       39.2MB
+quay.io/microshift/kube-rbac-proxy        v0.11.0             03509ac20d4d7       41.5MB
+quay.io/microshift/openshift-router       4.5                 2ade343656684       123MB
+quay.io/microshift/service-ca-operator    latest              0fedc7575c705       152MB
+POD ID              CREATED             STATE               NAME                                  NAMESPACE                       ATTEMPT             RUNTIME
+d1dcfec0e2bc2       4 minutes ago       Ready               dns-default-bd92w                     openshift-dns                   0                   (default)
+e02d8d7847572       4 minutes ago       Ready               router-default-79f7dc4c6b-2p4nb       openshift-ingress               0                   (default)
+a9ae0fe8b5a14       5 minutes ago       Ready               kube-flannel-ds-fzfn6                 kube-system                     0                   (default)
+bd375903e4d38       5 minutes ago       Ready               kubevirt-hostpath-provisioner-98frt   kubevirt-hostpath-provisioner   0                   (default)
+b1331d994b844       5 minutes ago       Ready               service-ca-58798776fb-b7dkb           openshift-service-ca            0                   (default)
+```
+
 ### Errors
 #### The node was low on resource: [DiskPressure]
 If you have less than 10% free disk space on the microSDXC card, the kubevirt-hostpath-provisioner pod may get evicted. This will happen on the 32GB microSDXC card if the disk space cannot be reclaimed after deleting usused images. You will need to create space by deleting some github sources we had downloaded for installation.
