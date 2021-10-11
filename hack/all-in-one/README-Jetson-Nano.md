@@ -295,7 +295,7 @@ After=crio.service
 
 [Service]
 WorkingDirectory=/usr/local/bin/
-ExecStart=microshift run
+ExecStart=/usr/local/bin/microshift run
 Restart=always
 User=root
 
@@ -303,7 +303,7 @@ User=root
 WantedBy=multi-user.target
 EOF
 
-sed -i 's|^ExecStart=microshift|ExecStart=/usr/local/bin/microshift|' /usr/lib/systemd/system/microshift.service
+#sed -i 's|^ExecStart=microshift|ExecStart=/usr/local/bin/microshift|' /usr/lib/systemd/system/microshift.service
 systemctl daemon-reload
 systemctl start microshift
 systemctl status microshift
@@ -396,7 +396,7 @@ docker exec -it microshift bash
 export KUBECONFIG=/var/lib/microshift/resources/kubeadmin/kubeconfig 
 watch "kubectl get nodes;kubectl get pods -A;crictl images;crictl pods" # wait for 2 minutes
 
-# The openshift-ingress and openshift-dns keep restarting, lets fix it.
+# The openshift-ingress and openshift-dns keep restarting? If so, lets fix it.
 systemctl stop microshift
 crictl rm --all --force
 crictl rmp --all --force
