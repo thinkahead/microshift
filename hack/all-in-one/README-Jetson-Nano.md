@@ -407,18 +407,16 @@ rm -rf /var/lib/microshift
 systemctl start microshift
 ```
 
-### Use the prebuild Microshift image quay.io/microshift/microshift:4.7.0-0.microshift-2021-08-31-224727-aio-linux-arm64
-The arm64 images and microshift binaries within images from https://quay.io/repository/microshift/microshift?tab=tags did not work in Docker on Jetson Nano. I got the error with iptables with the quay.io/microshift/microshift:4.7.0-0.microshift-2021-08-31-224727-aio-linux-arm64 when the container was started and the pods within the microshift container stayed in ContainerCreating state:
+### Use the prebuilt Microshift image quay.io/microshift/microshift:4.7.0-0.microshift-2021-08-31-224727-aio-linux-arm64
+The arm64 images and microshift binaries within images from https://quay.io/repository/microshift/microshift?tab=tags did not work in Docker on Jetson Nano. I got the error with iptables with the quay.io/microshift/microshift:4.7.0-0.microshift-2021-08-31-224727-aio-linux-arm64 when the container was started and the pods within the microshift container stayed in ContainerCreating state and golang errors with the microshift binary.
 ```
 Oct 07 14:38:21 microshift.example.com microshift[78]: E1007 14:38:21.128486      78 proxier.go:874] Failed to ensure that filter chain KUBE-EXTERNAL-SERVICES exists: error creating chain "KUBE-EXTERNAL-SERVICES": exit status 4: iptables v1.8.4 (nf_tables): Could not fetch rule set generation id: Invalid argument
 
 Oct 07 14:38:22 microshift.example.com microshift[78]: W1007 14:38:22.321539      78 iptables.go:564] Could not set up iptables canary mangle/KUBE-PROXY-CANARY: error creating chain "KUBE-PROXY-CANARY": exit status 4: iptables v1.8.4 (nf_tables): Could not fetch rule set generation id: Invalid argument
 ```
-I don't see the above problems now on Oct 11, 2021
-
-Let's fix it.
+I don't see the above iptables problems now on Oct 11, 2021. The iptables rpms in the image look correct now. Previously there was a mismatch between rhel8 and fedora on my setup. There is however still the "Invalid argument" problem with storage.conf. Let's fix it.
 - The yum install lines below were for the iptables "Invalid argument" that may not be required, therefore commented out.
-- The storage.conf "Invalid argument" problem is fixed by comment out the mountopt line.
+- The storage.conf "Invalid argument" problem is fixed by commenting out the mountopt line with the arguments.
 ```
 docker volume rm microshift-data;docker volume create microshift-data
 docker pull quay.io/microshift/microshift:4.7.0-0.microshift-2021-08-31-224727-aio-linux-arm64
