@@ -135,18 +135,23 @@ rm -rf cri-tools
 # When does /etc/containers/storage.conf get created? If it is not created here, this step may come later
 # We need to remove the options for mountopt from /etc/containers/storage.conf to the invalid argument error
 # "creating overlay mount to /var/lib/containers/storage/overlay/.../merged, mount_data="nodev,metacopy=on,lowerdir=/var/lib/containers/storage/overlay...": invalid argument
-sed -i "s/^\(mountopt.*\)/#\\1/" containers/storage.conf
+sed -i "s/^\(mountopt.*\)/#\\1/" /etc/containers/storage.conf
 
 # Get kubectl
 ARCH=arm64
 curl -LO "https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/$ARCH/kubectl"
 chmod +x kubectl
 mv kubectl /usr/local/bin
+```
 
+### Install CNI plugins
+Reference https://github.com/cri-o/cri-o/blob/main/contrib/cni/README.md
+```
 # We use the type bridge
 git clone https://github.com/containernetworking/plugins.git
 cd plugins/
 ./build_linux.sh
+mkdir -p /opt/cni/bin
 cp bin/* /opt/cni/bin
 cd ..
 ```
