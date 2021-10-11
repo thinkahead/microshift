@@ -275,6 +275,10 @@ crictl create $podid nginx.json net-pod.json # The container for nginx will go i
 crictl ps -a # List containers, get the containerid
 crictl start $containerid # Go to Running state
 crictl logs $containerid
+
+crictl inspectp $podid | grep io.kubernetes.cri-o.IP.0 # Get the ipaddr of pod
+curl $ipaddr # Will return the "Welcome to nginx!" html
+
 crictl stop $containerid # Go to Exited state
 crictl ps -a
 crictl rm $containerid
@@ -365,8 +369,9 @@ crictl rmi --all
 pkill -9 conmon
 pkill -9 pause
 rm -rf /var/lib/microshift
-#rm -rf /var/lib/containers/*
 systemctl stop crio
+rm -rf /var/lib/containers/*
+systemctl start crio
 ```
 
 ## Running Microshift in docker container on Ubuntu 18.04 - Jetson Nano
