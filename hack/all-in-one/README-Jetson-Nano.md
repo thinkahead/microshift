@@ -100,7 +100,7 @@ You canot install cri-o from the kubic above, it needs to be built for Ubuntu 18
 
 ### Build conmon, cri-o, crictl and containernetworking plugins. Get the kubeconfig for arm64
 
-Need to test again if this single line script works for installing cri-o, crictl and plugins, if not, then the rest of the instructions are below.
+Need to test again if this single line script works for installing cri-o, crictl and plugins, if not, then the rest of the instructions are below. If it works, jump to "Setup firewalld" section.
 ```
 curl https://raw.githubusercontent.com/cri-o/cri-o/main/scripts/get | bash -s -- -a arm64
 ```
@@ -167,6 +167,24 @@ cd plugins/
 mkdir -p /opt/cni/bin
 cp bin/* /opt/cni/bin
 cd ..
+```
+
+### Create the policy.json and registries.conf
+/etc/containers/policy.json
+```
+{ "default": [{ "type": "insecureAcceptAnything" }] }
+```
+
+/etc/containers/registries.conf
+```
+[registries.search]
+registries = ['registry.access.redhat.com', 'registry.fedoraproject.org', 'quay.io', 'docker.io']
+
+[registries.insecure]
+registries = []
+
+[registries.block]
+registries = []
 ```
 
 ### Setup firewalld
