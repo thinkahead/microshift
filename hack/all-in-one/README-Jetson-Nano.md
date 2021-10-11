@@ -95,6 +95,12 @@ apt-get install -y policycoreutils-python-utils conntrack firewalld
 You canot install cri-o from the kubic above, it needs to be built for Ubuntu 18.04 for arm64.
 
 ### Build conmon, cri-o, crictl and containernetworking plugins. Get the kubeconfig for arm64
+
+Need to test again if this single line script works for installing cri-o, crictl and plugins, if not, then the rest of the instructions are below.
+```
+curl https://raw.githubusercontent.com/cri-o/cri-o/main/scripts/get | bash -s -- -a arm64
+```
+
 Reference https://github.com/cri-o/cri-o/blob/main/install.md#installing-crio
 ```
 git clone https://github.com/containers/conmon
