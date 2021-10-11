@@ -356,6 +356,18 @@ kubectl get events --field-selector involvedObject.kind=Node
 kubectl delete events --field-selector involvedObject.kind=Node
 ```
 
+### Cleanup microshift/cri-o images and pods
+```
+systemctl stop microshift
+crictl rm --all --force
+crictl rmp --all --force
+crictl rmi --all
+pkill -9 conmon
+pkill -9 pause
+rm -rf /var/lib/microshift
+systemctl stop crio
+```
+
 ## Running Microshift in docker container on Ubuntu 18.04 - Jetson Nano
 On jetson-nano (if you installed firewalld previously, ignore otherwise):
 ```
