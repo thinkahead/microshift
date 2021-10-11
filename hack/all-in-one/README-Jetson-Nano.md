@@ -14,6 +14,10 @@ deb https://repo.download.nvidia.com/jetson/t210 r32.6 main
 
 apt update
 apt dist-upgrade
+# If your hostname is without a domain, you may want to add the ".example.com"
+# There was an issue on microshift saying that this is required
+# I don't think adding the domain is necessary anymore, but might as well do it
+hostnamectl set-hostname jetson-nano.example.com # replace jetson-nano with your short hostname
 dpkg-reconfigure tzdata # Select your timezone
 ```
 
