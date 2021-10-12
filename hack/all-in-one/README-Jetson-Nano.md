@@ -551,6 +551,18 @@ kubectl get svc # see the port 8080:30080
 curl localhost:30080
 ```
 
+## Install Metrics Server on Microshift
+```
+wget https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml -O metrics-server-components.yaml
+export KUBECONFIG=/var/lib/microshift/resources/kubeadmin/kubeconfig
+kubectl apply -f metrics-server-components.yaml
+kubectl get deployment metrics-server -n kube-system
+kubectl get events -n kube-system
+# Wait for a couple of minutes for metrics to be collected
+kubectl top nodes
+kubectl top pods -A
+```
+
 ## Accessing the cluster using API
 Reference https://kubernetes.io/docs/tasks/administer-cluster/access-cluster-api/
 ```
@@ -568,6 +580,12 @@ kubectl get secrets default-token-g99v6 -o yaml
 # Explore the API with TOKEN
 curl -X GET $APISERVER/api --header "Authorization: Bearer $TOKEN" --insecure
 ```
+
+## Questions
+- What data does the folder /run/containers/storage/ with userdata contain?
+How does it differ from the containers created by cri-o in /var/lib/containers?
+- What causes the "Resources before server is ready, possibly a sign for a broken load balancer setup." message in microshift jourtnalctl logs?
+https://github.com/redhat-et/microshift/issues/249
 
 ## Links
 Microshift end to end provisioning demo https://www.youtube.com/watch?v=QOiB8NExtA4
