@@ -349,6 +349,15 @@ bd375903e4d38       5 minutes ago       Ready               kubevirt-hostpath-pr
 b1331d994b844       5 minutes ago       Ready               service-ca-58798776fb-b7dkb           openshift-service-ca            0                   (default)
 ```
 
+### Use the oc client
+```
+wget https://mirror.openshift.com/pub/openshift-v4/arm64/clients/ocp/candidate/openshift-client-linux.tar.gz
+tar -zxvf ../openshift-client-linux.tar.gz
+cp oc /usr/local/bin
+# export the correct KUBECONFIG
+oc get pods -A
+```
+
 ### Errors
 #### The node was low on resource: [DiskPressure]
 If you have less than 10% free disk space on the microSDXC card, the kubevirt-hostpath-provisioner pod may get evicted. This will happen on the 32GB microSDXC card if the disk space cannot be reclaimed after deleting usused images. You will need to create space by deleting some github sources we had downloaded for installation.
@@ -358,6 +367,13 @@ rm -rf /root/.cache/go-build # Cleanup to get space on microSDXC card
 kubectl describe nodes
 kubectl get events --field-selector involvedObject.kind=Node
 kubectl delete events --field-selector involvedObject.kind=Node
+```
+
+#### oc new-project image-stream command don't work
+See https://github.com/redhat-et/microshift/issues/240
+```
+root@jetson-nano:~# oc new-project alexei
+error: unable to default to a user name: the server could not find the requested resource (get users.user.openshift.io ~)
 ```
 
 ### Cleanup microshift/cri-o images and pods
@@ -413,7 +429,7 @@ exit
 
 Outside the container back on the Jetson Nano    
 
-On jetson-nano (if you installed firewalld previously, ignore otherwise). Use the appropriate port 8443 or 6443.
+On jetson-nano (if you installed firewalld previously, ignore otherwise). Use the appropriate port 9443 or 6443.
 ```
 firewall-cmd --zone=public --list-ports # Check if require port 9443 or 6443 is present
 firewall-cmd --zone=public --permanent --add-port=9443/tcp
@@ -423,7 +439,7 @@ firewall-cmd --reload
 Access the nodes and pods in the container from outside the container
 ```
 KUBECONFIG=/var/lib/docker/volumes/microshift-data/_data/microshift/resources/kubeadmin/kubeconfig
-# if you changed the port to 9443, you will need to replace the port in the kubeconfig. The default is 6443
+# if you changed the port on the host side to 9443, you will need to replace the port in the kubeconfig. The default is 6443
 kubectl get pods -A
 ```
 
