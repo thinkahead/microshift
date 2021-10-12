@@ -436,9 +436,10 @@ firewall-cmd --zone=public --permanent --add-port=9443/tcp
 firewall-cmd --reload
 ```
 
-Access the nodes and pods in the container from outside the container
+Access the nodes and pods in the container from outside the container. Note that the microshift container must be started and microshift should be running within the container.
 ```
-KUBECONFIG=/var/lib/docker/volumes/microshift-data/_data/microshift/resources/kubeadmin/kubeconfig
+export KUBECONFIG=$(docker volume inspect microshift-data --format "{{.Mountpoint}}")/microshift/resources/kubeadmin/kubeconfig
+#export KUBECONFIG=/var/lib/docker/volumes/microshift-data/_data/microshift/resources/kubeadmin/kubeconfig
 # if you changed the port on the host side to 9443, you will need to replace the port in the kubeconfig. The default is 6443
 kubectl get pods -A
 ```
