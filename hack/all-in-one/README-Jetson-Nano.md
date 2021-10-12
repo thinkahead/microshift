@@ -375,12 +375,6 @@ systemctl start crio
 ```
 
 ## Running Microshift in docker container on Ubuntu 18.04 - Jetson Nano
-On jetson-nano (if you installed firewalld previously, ignore otherwise):
-```
-firewall-cmd --zone=public --permanent --add-port=9443/tcp
-firewall-cmd --reload
-```
-
 Build microshift binary as mentioned in previous section. You will copy the microshift binary for creating the image.
 
 ### Build the Microshift docker image on Jetson Nano
@@ -394,15 +388,17 @@ cp /root/microshift/microshift . # copy the microshift binary built earlier to t
 docker build --build-arg HOST=ubuntu18 -t microshift .
 ```
 
-### Start the microshift container and exec into it
+### Start the microshift container and exec into it, check the node and pods from within the container
 ```
 docker volume rm microshift-data;docker volume create microshift-data
-docker run -d --rm --name microshift -h microshift.example.com --privileged -v /lib/modules:/lib/modules -v microshift-data:/var/lib -p 9443:6443 microshift # or use the docker.io/karve/microshift:arm64-jetsonnano
+docker run -d --rm --name microshift -h microshift.example.com --privileged -v /lib/modules:/lib/modules -v microshift-data:/var/lib -p 6443:6443 microshift # or use the docker.io/karve/microshift:arm64-jetsonnano
+# If 6443 port is in use on the Jetson Nano, you may use -p 9443:6443
 docker exec -it microshift bash
+# Within the container
 export KUBECONFIG=/var/lib/microshift/resources/kubeadmin/kubeconfig 
 watch "kubectl get nodes;kubectl get pods -A;crictl images;crictl pods" # wait for 2 minutes
 
-# The openshift-ingress and openshift-dns keep restarting? If so, lets fix it.
+# If the openshift-ingress and openshift-dns keep restarting, lets fix it. If not, exit the container - All good.
 systemctl stop microshift
 crictl rm --all --force
 crictl rmp --all --force
@@ -411,16 +407,40 @@ pkill -9 conmon
 pkill -9 pause
 rm -rf /var/lib/microshift
 systemctl start microshift
+
+exit
 ```
 
-### Use the prebuilt Microshift image quay.io/microshift/microshift:4.7.0-0.microshift-2021-08-31-224727-aio-linux-arm64
-The arm64 images and microshift binaries within images from https://quay.io/repository/microshift/microshift?tab=tags did not work in Docker on Jetson Nano. I got the error with iptables with the quay.io/microshift/microshift:4.7.0-0.microshift-2021-08-31-224727-aio-linux-arm64 when the container was started and the pods within the microshift container stayed in ContainerCreating state and golang errors with the microshift binary.
+Outside the container back on the Jetson Nano    
+
+On jetson-nano (if you installed firewalld previously, ignore otherwise). Use the appropriate port 8443 or 6443.
+```
+firewall-cmd --zone=public --list-ports # Check if require port 9443 or 6443 is present
+firewall-cmd --zone=public --permanent --add-port=9443/tcp
+firewall-cmd --reload
+```
+
+Access the nodes and pods in the container from outside the container
+```
+KUBECONFIG=/var/lib/docker/volumes/microshift-data/_data/microshift/resources/kubeadmin/kubeconfig
+# if you changed the port to 9443, you will need to replace the port in the kubeconfig. The default is 6443
+kubectl get pods -A
+```
+
+### Use the prebuilt Microshift arm64 image from quay.io
+Specifically, we use the quay.io/microshift/microshift:4.7.0-0.microshift-2021-08-31-224727-aio-linux-arm64 image.
+The arm64 image from https://quay.io/repository/microshift/microshift?tab=tags did not work in Docker on Jetson Nano. I got the error with iptables with the quay.io/microshift/microshift:4.7.0-0.microshift-2021-08-31-224727-aio-linux-arm64 when the container was started and the pods within the microshift container stayed in ContainerCreating state.
 ```
 Oct 07 14:38:21 microshift.example.com microshift[78]: E1007 14:38:21.128486      78 proxier.go:874] Failed to ensure that filter chain KUBE-EXTERNAL-SERVICES exists: error creating chain "KUBE-EXTERNAL-SERVICES": exit status 4: iptables v1.8.4 (nf_tables): Could not fetch rule set generation id: Invalid argument
 
 Oct 07 14:38:22 microshift.example.com microshift[78]: W1007 14:38:22.321539      78 iptables.go:564] Could not set up iptables canary mangle/KUBE-PROXY-CANARY: error creating chain "KUBE-PROXY-CANARY": exit status 4: iptables v1.8.4 (nf_tables): Could not fetch rule set generation id: Invalid argument
 ```
-I don't see the above iptables problems now on Oct 11, 2021. The iptables rpms in the image look correct now (1.8.7-3). Previously there was a mismatch between rhel8 and fedora on my setup. There is however still the "Invalid argument" problem with storage.conf. Let's fix it.
+
+Also I got golang errors with the microshift binary from this container when I tried to use it directly on Jetson Nano (haven't tried to use the microsoft binary directly again).
+
+I don't see the above iptables problems now on Oct 11, 2021. The iptables rpms in the image look correct now (1.8.7-3). Previously there was a mismatch between rhel8 and fedora iptables on my setup. Maybe I forgot to delete the docker volume as I was switching between ubi8 and fedora 33 images while testing.
+
+There is however still the "Invalid argument" problem with storage.conf. Let's fix it.
 - The yum install lines below were for the iptables "Invalid argument" that may not be required, therefore commented out.
 - The storage.conf "Invalid argument" problem is fixed by commenting out the mountopt line with the arguments.
 ```
