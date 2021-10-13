@@ -294,7 +294,27 @@ crictl stopp $podid # Stop the pod
 crictl rmp $podid # Remove the pod
 ```
 
-### Testing crio with vector-add cuda sample
+### Testing crio with vector-add cuda sample (optional)
+Create the /usr/share/containers/oci/hooks.d/nvidia.json
+```
+  {
+      "version": "1.0.0",
+      "hook": {
+          "path": "/usr/bin/nvidia-container-runtime-hook",
+          "args": ["nvidia-container-runtime-hook", "prestart"],
+          "env": [
+              "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin              "
+          ]
+      },
+      "when": {
+          "always": true,
+          "commands": [".*"]
+      },
+      "stages": ["prestart"]
+  }
+```
+
+Copy the samples (we use the vectorAdd)
 ```
 mkdir vectoradd
 cd vectoradd
@@ -379,6 +399,13 @@ Copy output data from the CUDA device to the host memory
 Test PASSED
 Done
 ```
+
+If it fails because of missing hook /usr/share/containers/oci/hooks.d/nvidia.json, you will see the output
+```
+Failed to allocate device vector A (error code CUDA driver version is insufficient for CUDA runtime version)!
+[Vector addition of 50000 elements]
+```
+
 Delete the container and pod
 ```
 crictl ps -a
