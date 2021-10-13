@@ -314,6 +314,11 @@ Create the /usr/share/containers/oci/hooks.d/nvidia.json
   }
 ```
 
+Restart cri-o
+```
+systemctl restart crio
+```
+
 Copy the samples (we use the vectorAdd)
 ```
 mkdir vectoradd
