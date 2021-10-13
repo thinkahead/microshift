@@ -740,6 +740,54 @@ kubectl get svc # see the port 8080:30080
 curl localhost:30080
 ```
 
+### Sample Job devicequery
+devicequery.yaml
+```
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: devicequery-job
+spec:
+  parallelism: 1
+  completions: 1
+  activeDeadlineSeconds: 1800
+  backoffLimit: 6
+  template:
+    metadata:
+      labels:
+        app: devicequery
+    spec:
+      containers:
+      - name: devicequery
+        image: docker.io/karve/devicequery:arm64-jetsonnano
+      restartPolicy: OnFailure
+```
+oc apply -f devicequery.yaml
+
+### Sample Job vectorAdd
+vectoradd.yaml
+```
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: vectoradd-job
+spec:
+  parallelism: 1
+  completions: 1
+  activeDeadlineSeconds: 1800
+  backoffLimit: 6
+  template:
+    metadata:
+      labels:
+        app: vectoradd
+    spec:
+      containers:
+      - name: vectoradd
+        image: docker.io/karve/vector-add-sample:arm64-jetsonnano
+      restartPolicy: OnFailure
+```
+oc apply -f vectoradd.yaml
+
 ## Install Metrics Server on Microshift
 ```
 wget https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml -O metrics-server-components.yaml
