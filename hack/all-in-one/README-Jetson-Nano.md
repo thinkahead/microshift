@@ -7,6 +7,7 @@ Jetson Nano downloads are at https://developer.nvidia.com/embedded/downloads and
 
 If your SD card has older Jetpak, you can update the L4T as follows. The latest is JetPack 4.6 that includes L4T 32.6.1. The platform is t210 for NVIDIA® Jetson Nano™ devices. The version is set to r32.6 (Do not set to r32.6.1)
 ```
+sudo su -
 vi /etc/apt/sources.list.d/nvidia-l4t-apt-source.list
 
 deb https://repo.download.nvidia.com/jetson/common r32.6 main
@@ -14,6 +15,12 @@ deb https://repo.download.nvidia.com/jetson/t210 r32.6 main
 
 apt update
 apt dist-upgrade
+
+pip install -U jetson-stats
+jetson_release -v
+jtop
+cat /etc/nv_tegra_release
+
 # If your hostname is without a domain, you may want to add the ".example.com"
 # There was an issue on microshift saying that this is required
 # I don't think adding the domain is necessary anymore, but might as well do it
@@ -271,6 +278,7 @@ EOF
 
 crictl runp net-pod.json
 crictl pods # Get the podid
+crictl pull nginx # Pull the image
 crictl create $podid nginx.json net-pod.json # The container for nginx will go into Created state
 crictl ps -a # List containers, get the containerid
 crictl start $containerid # Go to Running state
@@ -280,6 +288,99 @@ crictl inspectp $podid | grep io.kubernetes.cri-o.IP.0 # Get the ipaddr of pod
 curl $ipaddr # Will return the "Welcome to nginx!" html
 
 crictl stop $containerid # Go to Exited state
+crictl ps -a
+crictl rm $containerid
+crictl stopp $podid # Stop the pod
+crictl rmp $podid # Remove the pod
+```
+
+### Testing crio with vector-add cuda sample
+```
+mkdir vectoradd
+cd vectoradd
+cp -r /usr/local/cuda/samples .
+```
+
+Create the following Dockerfile
+```
+FROM nvcr.io/nvidia/l4t-base:r32.6.1
+
+RUN apt-get update && apt-get install -y --no-install-recommends make g++
+COPY ./samples /tmp/samples
+
+WORKDIR /tmp/samples/0_Simple/vectorAdd/
+RUN make clean && make
+
+CMD ["./vectorAdd"]
+```
+
+Create the vectoradd.json
+```
+{
+  "metadata": {
+    "name": "vectoradd-container",
+    "attempt": 1
+  },
+  "image": {
+    "image": "docker.io/karve/vector-add-sample:arm64-jetsonnano"
+  },
+  "log_path": "vectoradd.log",
+  "linux": {
+    "security_context": {
+      "namespace_options": {}
+    }
+  }
+}
+```
+
+Create the net-pod.json
+```
+{
+  "metadata": {
+    "name": "networking",
+    "uid": "networking-pod-uid",
+    "namespace": "default",
+    "attempt": 1
+  },
+  "hostname": "networking",
+  "port_mappings": [
+    {
+      "container_port": 80
+    }
+  ],
+  "log_directory": "/tmp/net-pod",
+  "linux": {}
+}
+```
+
+Build and push the vector-add-sample image
+```
+docker build -t karve/vector-add-sample:arm64-jetsonnano .
+docker push karve/vector-add-sample:arm64-jetsonnano
+```
+
+Run the vector-add-sample in crio
+```
+crictl runp net-pod.json
+crictl pods # Get the podid
+crictl pull docker.io/karve/vector-add-sample:arm64-jetsonnano
+crictl create $podid vectoradd.json net-pod.json # The container for nginx will go into Created state
+crictl ps -a # List containers, get the containerid
+crictl start $containerid # Go to Running and Exited state
+crictl logs $containerid
+```
+The output shows that the Test PASSED
+```
+root@jetson-nano:~/tests/matmul# crictl logs 681ed5500e2bc
+[Vector addition of 50000 elements]
+Copy input data from the host memory to the CUDA device
+CUDA kernel launch with 196 blocks of 256 threads
+Copy output data from the CUDA device to the host memory
+Test PASSED
+Done
+```
+Delete the container and pod
+```
 crictl ps -a
 crictl rm $containerid
 crictl stopp $podid # Stop the pod
@@ -368,6 +469,9 @@ kubectl describe nodes
 kubectl get events --field-selector involvedObject.kind=Node
 kubectl delete events --field-selector involvedObject.kind=Node
 ```
+
+#### ImageInspectError
+If the pod shows this ImageInspectError state, you may be missing the /etc/containers/registries.conf. You can add that or qualify the image with "docker.io/"  or the correct registry.
 
 #### oc new-project image-stream command don't work
 See https://github.com/redhat-et/microshift/issues/240
