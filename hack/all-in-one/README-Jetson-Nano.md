@@ -279,6 +279,7 @@ EOF
 crictl runp net-pod.json
 crictl pods # Get the podid
 crictl pull nginx # Pull the image
+crictl images # This will show the nginx image
 crictl create $podid nginx.json net-pod.json # The container for nginx will go into Created state
 crictl ps -a # List containers, get the containerid
 crictl start $containerid # Go to Running state
@@ -294,7 +295,7 @@ crictl stopp $podid # Stop the pod
 crictl rmp $podid # Remove the pod
 ```
 
-### Testing crio with vector-add cuda sample (optional)
+### Testing cri-o with vector-add cuda sample (optional)
 Create the /usr/share/containers/oci/hooks.d/nvidia.json
 ```
   {
@@ -389,6 +390,7 @@ Run the vector-add-sample in crio
 crictl runp net-pod.json
 crictl pods # Get the podid
 crictl pull docker.io/karve/vector-add-sample:arm64-jetsonnano
+crictl images # This will show the vector-add-sample image
 crictl create $podid vectoradd.json net-pod.json # The container for nginx will go into Created state
 crictl ps -a # List containers, get the containerid
 crictl start $containerid # Go to Running and Exited state
@@ -417,6 +419,20 @@ crictl ps -a
 crictl rm $containerid
 crictl stopp $podid # Stop the pod
 crictl rmp $podid # Remove the pod
+```
+
+### Testing cri-o with device-query sample (optional)
+Create the following Dockerfile in new folder devicequery and follow the same instrutions as vector-add
+```
+FROM nvcr.io/nvidia/l4t-base:r32.6.1
+
+RUN apt-get update && apt-get install -y --no-install-recommends make g++
+COPY ./samples /tmp/samples
+
+WORKDIR /tmp/samples/1_Utilities/deviceQuery
+RUN make clean && make
+
+CMD ["./deviceQuery"]
 ```
 
 ### Run Microshift
