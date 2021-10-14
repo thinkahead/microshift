@@ -236,7 +236,7 @@ systemctl status crio
 journalctl -u crio -f # Ctrl-C to stop the logs
 ```
 
-### Testing cri-o with nginx (optional)
+### 1. Testing cri-o with nginx (optional)
 Use this section to learn how to create/delete a pod with container using cri-o
 ```
 cat >nginx.json<<EOF
@@ -295,7 +295,7 @@ crictl stopp $podid # Stop the pod
 crictl rmp $podid # Remove the pod
 ```
 
-### Testing cri-o with vector-add cuda sample (optional)
+### 2. Testing cri-o with vector-add cuda sample (optional)
 Create the /usr/share/containers/oci/hooks.d/nvidia.json
 ```
   {
@@ -396,7 +396,7 @@ crictl ps -a # List containers, get the containerid
 crictl start $containerid # Go to Running and Exited state
 crictl logs $containerid
 ```
-The output shows that the Test PASSED
+The output shows: Test PASSED
 ```
 root@jetson-nano:~/tests/matmul# crictl logs 681ed5500e2bc
 [Vector addition of 50000 elements]
@@ -421,8 +421,8 @@ crictl stopp $podid # Stop the pod
 crictl rmp $podid # Remove the pod
 ```
 
-### Testing cri-o with device-query sample (optional)
-Create the following Dockerfile in new folder devicequery and follow the same instrutions as vector-add
+### 3. Testing cri-o with device-query sample (optional)
+Create the following Dockerfile in new folder devicequery and follow the same instructions as vector-add
 ```
 FROM nvcr.io/nvidia/l4t-base:r32.6.1
 
@@ -433,6 +433,63 @@ WORKDIR /tmp/samples/1_Utilities/deviceQuery
 RUN make clean && make
 
 CMD ["./deviceQuery"]
+```
+
+### 4. Testing cri-o with pytorch sample (optional, This will stress test the GPU - Warning: attach the FAN)
+Create the pytorchsample.json
+```
+{
+  "metadata": {
+    "name": "pytorchsample-container",
+    "attempt": 1
+  },
+  "image": {
+    "image": "nvcr.io/nvidia/l4t-pytorch:r32.6.1-pth1.9-py3"
+  },
+  "log_path": "pytorchsample.log",
+  "linux": {
+    "security_context": {
+      "namespace_options": {}
+    }
+  }
+}
+```
+
+Run the pytorch sample
+```
+crictl runp net-pod.json
+crictl pods # Get the podid
+crictl pull nvcr.io/nvidia/l4t-pytorch:r32.6.1-pth1.9-py3
+crictl images # This will show the l4t-pytorch image
+crictl create $podid pytorchsample.json net-pod.json # The container for nginx will go into Created state
+crictl exec -it $podid bash
+
+echo "nameserver 8.8.8.8" > /etc/resolv.conf
+TA_URL="https://nvidia.box.com/shared/static/y1ygiahv8h75yiyh0pt50jqdqt7pohgx.gz"
+DATA_NAME="ILSVRC2012_img_val_subset_5k"
+DATA_PATH="test/data/$DATA_NAME"
+if [ ! -d "$DATA_PATH" ]; then
+ echo 'downloading data for testing torchvision...'
+ if [ ! -d "test/data" ]; then
+  mkdir -p test/data
+ fi
+ wget --quiet --show-progress --progress=bar:force:noscroll --no-check-certificate $DATA_URL -O test/data/$DATA_NAME.tar.gz
+ tar -xzf test/data/$DATA_NAME.tar.gz -C test/data/
+fi
+wget https://raw.githubusercontent.com/dusty-nv/jetson-containers/master/test/test_pytorch.py -O test/test_pytorch.py
+python3 test/test_pytorch.py
+python3 test/test_torchvision.py --data=$DATA_PATH --use-cuda
+wget https://raw.githubusercontent.com/dusty-nv/jetson-containers/master/test/test_torchaudio.py -O test/test_torchaudio.py
+python3 test/test_torchaudio.py
+exit
+```
+
+Delete the container and pod for pytorch
+```
+crictl ps -a
+crictl rm $containerid
+crictl stopp $podid # Stop the pod
+crictl rmp $podid # Remove the pod
 ```
 
 ### Run Microshift
@@ -766,7 +823,9 @@ spec:
         image: docker.io/karve/devicequery:arm64-jetsonnano
       restartPolicy: OnFailure
 ```
+```
 oc apply -f devicequery.yaml
+```
 
 ### Sample Job vectorAdd
 vectoradd.yaml
@@ -790,7 +849,9 @@ spec:
         image: docker.io/karve/vector-add-sample:arm64-jetsonnano
       restartPolicy: OnFailure
 ```
+```
 oc apply -f vectoradd.yaml
+```
 
 ## Install Metrics Server on Microshift
 ```
@@ -829,5 +890,5 @@ How does it differ from the containers created by cri-o in /var/lib/containers?
 https://github.com/redhat-et/microshift/issues/249
 
 ## References
-Microshift end to end provisioning demo https://www.youtube.com/watch?v=QOiB8NExtA4
-NVidia GPU Operator on x86-64 with microshift https://gist.github.com/rootfs/2363394bc4f1bd14cf8208ed2ea82038#install-nvidia-gpu-operator
+- Microshift end to end provisioning demo https://www.youtube.com/watch?v=QOiB8NExtA4
+- NVidia GPU Operator on x86-64 with microshift https://gist.github.com/rootfs/2363394bc4f1bd14cf8208ed2ea82038#install-nvidia-gpu-operator
