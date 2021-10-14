@@ -546,12 +546,16 @@ systemctl start crio
 Build microshift binary as mentioned in previous section. You will copy the microshift binary for creating the image.
 
 ### Build the Microshift docker image on Jetson Nano
-Build the microshift image on your Jetson Nano. You may skip this if you pulled the docker image earlier.
+Build the microshift image on your Jetson Nano. You may skip this if you pulled the docker image earlier. The Dockerfile uses the registry.access.redhat.com/ubi8/ubi-init:8.4 as the default base image. One fix is required to the Dockerfile to replace the hardcoded x86_64 with aarch64.
 ```
 systemctl start docker
 git clone https://github.com/thinkahead/microshift.git
 cd microshift/hack/all-in-one
 cp /root/microshift/microshift . # copy the microshift binary built earlier to this folder
+# Replace the two lines containing x86_64 with aarch64 in Dockerfile
+      rpm -v -i --force https://archives.fedoraproject.org/pub/archive/fedora/linux/releases/28/Everything/aarch64/os/Packages/i/iptables-libs-1.6.2-2.fc28.aarch64.rpm \
+                   https://archives.fedoraproject.org/pub/archive/fedora/linux/releases/28/Everything/aarch64/os/Packages/i/iptables-1.6.2-2.fc28.aarch64.rpm && \
+
 # HOST=xxx below should not be rhel8, so I just set it to ubuntu18
 docker build --build-arg HOST=ubuntu18 -t microshift .
 ```
@@ -824,6 +828,6 @@ How does it differ from the containers created by cri-o in /var/lib/containers?
 - What causes the "Resources before server is ready, possibly a sign for a broken load balancer setup." message in microshift jourtnalctl logs?
 https://github.com/redhat-et/microshift/issues/249
 
-## Links
+## References
 Microshift end to end provisioning demo https://www.youtube.com/watch?v=QOiB8NExtA4
-
+NVidia GPU Operator on x86-64 with microshift https://gist.github.com/rootfs/2363394bc4f1bd14cf8208ed2ea82038#install-nvidia-gpu-operator
