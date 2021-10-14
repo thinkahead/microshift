@@ -236,7 +236,34 @@ systemctl status crio
 journalctl -u crio -f # Ctrl-C to stop the logs
 ```
 
-### 1. Testing cri-o with nginx (optional)
+### Add the nvidia-container-runtime-hook to cri-o
+Create the /usr/share/containers/oci/hooks.d/nvidia.json
+```
+  {
+      "version": "1.0.0",
+      "hook": {
+          "path": "/usr/bin/nvidia-container-runtime-hook",
+          "args": ["nvidia-container-runtime-hook", "prestart"],
+          "env": [
+              "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin              "
+          ]
+      },
+      "when": {
+          "always": true,
+          "commands": [".*"]
+      },
+      "stages": ["prestart"]
+  }
+```
+
+Restart cri-o
+```
+systemctl restart crio
+```
+
+### CRI-O samples
+
+#### 1. cri-o with nginx sample
 Use this section to learn how to create/delete a pod with container using cri-o
 ```
 cat >nginx.json<<EOF
@@ -295,31 +322,7 @@ crictl stopp $podid # Stop the pod
 crictl rmp $podid # Remove the pod
 ```
 
-### 2. Testing cri-o with vector-add cuda sample (optional)
-Create the /usr/share/containers/oci/hooks.d/nvidia.json
-```
-  {
-      "version": "1.0.0",
-      "hook": {
-          "path": "/usr/bin/nvidia-container-runtime-hook",
-          "args": ["nvidia-container-runtime-hook", "prestart"],
-          "env": [
-              "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin              "
-          ]
-      },
-      "when": {
-          "always": true,
-          "commands": [".*"]
-      },
-      "stages": ["prestart"]
-  }
-```
-
-Restart cri-o
-```
-systemctl restart crio
-```
-
+#### 2. cri-o with vector-add cuda sample
 Copy the samples (we use the vectorAdd)
 ```
 mkdir vectoradd
@@ -421,7 +424,7 @@ crictl stopp $podid # Stop the pod
 crictl rmp $podid # Remove the pod
 ```
 
-### 3. Testing cri-o with device-query sample (optional)
+#### 3. cri-o with device-query sample
 Create the following Dockerfile in new folder devicequery and follow the same instructions as vector-add
 ```
 FROM nvcr.io/nvidia/l4t-base:r32.6.1
@@ -435,7 +438,9 @@ RUN make clean && make
 CMD ["./deviceQuery"]
 ```
 
-### 4. Testing cri-o with pytorch sample (optional, This will stress test the GPU - Warning: attach the FAN)
+#### 4. Testing cri-o with pytorch sample
+**This will stress test the GPU - Warning: attach the FAN**
+
 Create the pytorchsample.json
 ```
 {
@@ -691,7 +696,7 @@ systemctl start microshift
 ## Samples to run on Microshift
 Run the following within the Microshift container or directly on Jetson Nano if Microshift is installed directly on Jetson.
 
-### Sample mysql
+### 1. Microshift Sample App mysql
 Download helm and run the mysql server in a container with hostpath persistent volume and a mysql client container
 ```
 # Install helm
@@ -746,7 +751,7 @@ mysql -uroot -psecretpassword
 update mysql.user set host='%' where user='root';
 ```
 
-### Sample nginx
+### 2. Microshift Sample App nginx
 ```
 Create the file nginx.yaml
 
@@ -801,7 +806,7 @@ kubectl get svc # see the port 8080:30080
 curl localhost:30080
 ```
 
-### Sample Job devicequery
+### 3. Microshift Sample Job devicequery
 devicequery.yaml
 ```
 apiVersion: batch/v1
@@ -827,7 +832,7 @@ spec:
 oc apply -f devicequery.yaml
 ```
 
-### Sample Job vectorAdd
+### 4. Microshift Sample Job vectorAdd
 vectoradd.yaml
 ```
 apiVersion: batch/v1
@@ -851,6 +856,70 @@ spec:
 ```
 ```
 oc apply -f vectoradd.yaml
+```
+
+### 5. Microshift Sample Jupyter Lab to access USB camera on /dev/video0
+Create the following jupyter.yaml
+```
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jupyter-deployment
+spec:
+  selector:
+    matchLabels:
+      app: jupyter
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: jupyter
+    spec:
+      containers:
+      - name: jupyter
+        image: nvcr.io/nvidia/dli/dli-nano-ai:v2.0.1-r32.6.1
+        imagePullPolicy: IfNotPresent
+        command: ["/bin/bash", "-c", "jupyter lab --LabApp.token='' --LabApp.password='' --ip 0.0.0.0 --port 8888 --allow-root &> /var/log/jupyter.log && sleep infinity"]
+        securityContext:
+          privileged: true
+          #allowPrivilegeEscalation: false
+          #capabilities:
+          #  drop: ["ALL"]
+        ports:
+        - containerPort: 8888
+        # resource required for hpa
+        resources:
+          requests:
+            memory: 128M
+            cpu: 125m
+          limits:
+            memory: 2048M
+            cpu: 1000m
+        volumeMounts:
+          - name: dev-video0
+            mountPath: /dev/video0
+      volumes:
+        - name: dev-video0
+          hostPath:
+            path: /dev/video0
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+ name: jupyter-svc
+ labels:
+   app: jupyter
+spec:
+ type: NodePort
+ ports:
+ - port: 8888
+   nodePort: 30080
+ selector:
+   app: jupyter
+```
+```
+oc apply -f jupyter.yaml
 ```
 
 ## Install Metrics Server on Microshift
