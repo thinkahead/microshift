@@ -26,17 +26,20 @@ cat /etc/nv_tegra_release
 # I don't think adding the domain is necessary anymore, but might as well do it
 hostnamectl set-hostname jetson-nano.example.com # replace jetson-nano with your short hostname
 dpkg-reconfigure tzdata # Select your timezone
+
+# If you have the default Jupyter Lab running on your Jetson nano, you may stop it
+systemctl stop jetcard_jupyter.service
 ```
 
-### DLI "Getting Started with AI on Jetson Nano" Course Environment Container
-https://ngc.nvidia.com/catalog/containers/nvidia:dli:dli-nano-ai
+### Testing the Jupyter Lab container in docker
+DLI "Getting Started with AI on Jetson Nano" Course Environment Container https://ngc.nvidia.com/catalog/containers/nvidia:dli:dli-nano-ai
 ```
 docker run --runtime nvidia -it --rm --network host --volume ~/nvdli-data:/nvdli-nano/data --device /dev/video0 nvcr.io/nvidia/dli/dli-nano-ai:v2.0.1-r32.6.1
 ```
-Connect to your Jetson nano ip address and login with pasword dlinano [http://192.168.1.205:8888/lab?](http://192.168.1.205:8888/lab?)
+Connect to your Jetson nano ip address and login with password dlinano [http://192.168.1.205:8888/lab?](http://192.168.1.205:8888/lab?)
 
 ## Install dependencies and build Microshift binary for arm64 on Ubuntu 18.04 - Jetson Nano
-You may either copy the microshift binary from the docker image I have created for the jetson nano or build it.
+You may either copy the microshift binary from the docker image docker.io/karve/microshift:arm64-jetsonnano for the jetson nano or build it.
 
 ### Copy the Microshift binary from docker image
 If you want to build your own microshift binary for arm64 Jetson Nano, you may skip this step.
@@ -608,7 +611,7 @@ systemctl start crio
 Build microshift binary as mentioned in previous section. You will copy the microshift binary for creating the image.
 
 ### Build the Microshift docker image on Jetson Nano
-Build the microshift image on your Jetson Nano. You may skip this if you pulled the docker image earlier. The Dockerfile uses the registry.access.redhat.com/ubi8/ubi-init:8.4 as the default base image. One fix is required to the Dockerfile to replace the hardcoded x86_64 with aarch64.
+Build the microshift image on your Jetson Nano. You may skip this if you pulled the docker image earlier. The Dockerfile uses the registry.access.redhat.com/ubi8/ubi-init:8.4 as the default base image. One fix is required to the Dockerfile to replace the hardcoded x86_64 with aarch64. I have created an image at docker.io/karve/microshift:arm64-jetsonnano
 ```
 systemctl start docker
 git clone https://github.com/thinkahead/microshift.git
