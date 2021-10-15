@@ -573,7 +573,7 @@ oc get pods -A
 ```
 
 ### Errors
-#### The node was low on resource: [DiskPressure]
+#### 1. The node was low on resource: [DiskPressure]
 If you have less than 10% free disk space on the microSDXC card, the kubevirt-hostpath-provisioner pod may get evicted. This will happen on the 32GB microSDXC card if the disk space cannot be reclaimed after deleting usused images. You will need to create space by deleting some github sources we had downloaded for installation.
 ```
 rm -rf /root/.cache/go-build # Cleanup to get space on microSDXC card
@@ -583,14 +583,28 @@ kubectl get events --field-selector involvedObject.kind=Node
 kubectl delete events --field-selector involvedObject.kind=Node
 ```
 
-#### ImageInspectError
+#### 2. ImageInspectError
 If the pod shows this ImageInspectError state, you may be missing the /etc/containers/registries.conf. You can add that or qualify the image with "docker.io/"  or the correct registry.
 
-#### oc new-project image-stream command don't work
+#### 3. oc new-project image-stream command don't work
 See https://github.com/redhat-et/microshift/issues/240
 ```
 root@jetson-nano:~# oc new-project alexei
 error: unable to default to a user name: the server could not find the requested resource (get users.user.openshift.io ~)
+```
+
+#### 4. Error: failed to initialize NVML: could not load NVML library
+https://github.com/NVIDIA/k8s-device-plugin/issues/19
+The nvidia-device-plugin does not work on Jetson Nano. So, directly add the nvidia-container-runtime-hook to cri-o as specified at https://github.com/thinkahead/microshift/blob/main/hack/all-in-one/README-Jetson-Nano.md#add-the-nvidia-container-runtime-hook-to-cri-o
+```
+root@jetson-nano:~/k8s-device-plugin# docker run -it --privileged --network=none -v /var/lib/kubelet/device-plugins:/var/lib/kubelet/device-plugins docker.io/karve/k8s-device-plugin:arm64-jetsonnano --pass-device-specs
+2021/10/13 16:34:03 Loading NVML
+2021/10/13 16:34:03 Failed to initialize NVML: could not load NVML library.
+2021/10/13 16:34:03 If this is a GPU node, did you set the docker default runtime to `nvidia`?
+2021/10/13 16:34:03 You can check the prerequisites at: https://github.com/NVIDIA/k8s-device-plugin#prerequisites
+2021/10/13 16:34:03 You can learn how to set the runtime at: https://github.com/NVIDIA/k8s-device-plugin#quick-start
+2021/10/13 16:34:03 If this is not a GPU node, you should set up a toleration or nodeSelector to only deploy this plugin on GPU nodes
+2021/10/13 16:34:03 Error: failed to initialize NVML: could not load NVML library
 ```
 
 ### Cleanup microshift/cri-o images and pods
