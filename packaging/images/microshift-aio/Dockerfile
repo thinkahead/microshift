@@ -1,0 +1,73 @@
+ARG IMAGE_NAME=registry.access.redhat.com/ubi8/ubi-init:8.4
+
+FROM registry.access.redhat.com/ubi8/go-toolset as builder
+
+ARG FROM_SOURCE=false
+
+ARG ARCH
+
+ENV GOPATH=/opt/app-root GOCACHE=/mnt/cache GO111MODULE=on
+
+WORKDIR $GOPATH/src/github.com/redhat-et/microshift
+
+COPY . .
+
+USER root
+
+# only need these args and the COPY for FROM_SOURCE="true"
+ARG MAKE_TARGET
+ARG BIN_TIMESTAMP
+ARG SOURCE_GIT_TAG
+
+RUN if [ "$FROM_SOURCE" == "true" ]; then \
+      make clean $MAKE_TARGET SOURCE_GIT_TAG=$SOURCE_GIT_TAG BIN_TIMESTAMP=$BIN_TIMESTAMP && \
+      mv _output/bin/linux_$ARCH/microshift microshift; \
+    else \
+      export VERSION=$(curl -s https://api.github.com/repos/redhat-et/microshift/releases | grep tag_name | head -n 1 | cut -d '"' -f 4) && \
+      curl -LO https://github.com/redhat-et/microshift/releases/download/$VERSION/microshift-linux-$ARCH && \
+      mv microshift-linux-$ARCH microshift; \
+    fi
+
+FROM ${IMAGE_NAME}
+
+ARG HOST=rhel8
+
+ARG ARCH
+
+ENV BUILD_PATH=packaging/images/microshift-aio
+
+COPY --from=builder /opt/app-root/src/github.com/redhat-et/microshift/microshift /usr/local/bin/microshift
+COPY $BUILD_PATH/unit /usr/lib/systemd/system/microshift.service
+COPY $BUILD_PATH/kubelet-cgroups.conf /etc/systemd/system.conf.d/kubelet-cgroups.conf
+COPY $BUILD_PATH/crio-bridge.conf /etc/cni/net.d/100-crio-bridge.conf
+
+RUN curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/$ARCH/kubectl" && \
+    chmod +x ./kubectl && \
+    mv ./kubectl /usr/local/bin/kubectl
+
+RUN chmod 755 /usr/local/bin/microshift
+RUN export VERSION=1.20 && \
+    export OS=CentOS_8_Stream && \
+    curl -L -o /etc/yum.repos.d/devel:kubic:libcontainers:stable.repo https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/$OS/devel:kubic:libcontainers:stable.repo && \
+    curl -L -o /etc/yum.repos.d/devel:kubic:libcontainers:stable:cri-o:$VERSION.repo https://download.opensuse.org/repositories/devel:kubic:libcontainers:stable:cri-o:$VERSION/$OS/devel:kubic:libcontainers:stable:cri-o:$VERSION.repo 
+
+RUN dnf install -y cri-o \
+        cri-tools \
+        iproute \
+        procps-ng && \
+    dnf clean all
+
+RUN sed -i 's|/usr/libexec/crio/conmon|/usr/bin/conmon|' /etc/crio/crio.conf && \
+    systemctl enable microshift.service && \
+    systemctl enable crio 
+
+RUN if [ "$HOST" == "rhel8" ]; then  \
+        dnf install -y iptables; \
+    else \
+      dnf install -y libnetfilter_conntrack libnfnetlink && \
+      rpm -v -i --force https://archives.fedoraproject.org/pub/archive/fedora/linux/releases/28/Everything/x86_64/os/Packages/i/iptables-libs-1.6.2-2.fc28.x86_64.rpm \
+                   https://archives.fedoraproject.org/pub/archive/fedora/linux/releases/28/Everything/x86_64/os/Packages/i/iptables-1.6.2-2.fc28.x86_64.rpm && \
+      sed -e '/mountopt/s/,\?metacopy=on,\?//' -i /etc/containers/storage.conf; \
+    fi
+
+CMD [ "/sbin/init" ]
