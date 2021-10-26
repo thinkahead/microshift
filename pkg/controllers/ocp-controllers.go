@@ -61,12 +61,6 @@ func OCPAPIServer(cfg *config.MicroshiftConfig) error {
 		"--config=" + cfg.DataDir + "/resources/openshift-apiserver/config/config.yaml",
 		"--authorization-kubeconfig=" + cfg.DataDir + "/resources/kubeadmin/kubeconfig",
 		"--authentication-kubeconfig=" + cfg.DataDir + "/resources/kubeadmin/kubeconfig",
-		"--requestheader-client-ca-file=" + cfg.DataDir + "/certs/ca-bundle/ca-bundle.crt",
-		"--requestheader-allowed-names=kube-apiserver-proxy,system:kube-apiserver-proxy,system:openshift-aggregator",
-		"--requestheader-username-headers=X-Remote-User",
-		"--requestheader-group-headers=X-Remote-Group",
-		"--requestheader-extra-headers-prefix=X-Remote-Extra-",
-		"--client-ca-file=" + cfg.DataDir + "/certs/ca-bundle/ca-bundle.crt",
 		"--logtostderr=" + strconv.FormatBool(cfg.LogDir == "" || cfg.LogAlsotostderr),
 		"--alsologtostderr=" + strconv.FormatBool(cfg.LogAlsotostderr),
 		"--v=" + strconv.Itoa(cfg.LogVLevel),
@@ -83,7 +77,11 @@ func OCPAPIServer(cfg *config.MicroshiftConfig) error {
 	}()
 
 	// ocp api service registration
-	if err := createAPIHeadlessSvc(cfg); err != nil {
+	if err := createAPIHeadlessSvc(cfg, "openshift-apiserver", 8444); err != nil {
+		logrus.Warningf("failed to apply headless svc %v", err)
+		return err
+	}
+	if err := createAPIHeadlessSvc(cfg, "openshift-oauth-apiserver", 8443); err != nil {
 		logrus.Warningf("failed to apply headless svc %v", err)
 		return err
 	}
