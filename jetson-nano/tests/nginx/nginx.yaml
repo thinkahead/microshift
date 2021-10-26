@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  selector:
+    matchLabels:
+      app: nginx
+  replicas: 2 # tells deployment to run 2 pods matching the template
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: docker.io/nginxinc/nginx-unprivileged:alpine
+        ports:
+        - containerPort: 8080
+        # resource required for hpa
+        resources:
+          requests:
+            memory: 128M
+            cpu: 125m
+          limits:
+            memory: 1024M
+            cpu: 1000m
+---
+apiVersion: v1
+kind: Service
+metadata:
+ name: nginx-svc
+ labels:
+   app: nginx
+spec:
+ type: NodePort
+ ports:
+ - port: 8080
+   nodePort: 30080
+ selector:
+   app: nginx
+
