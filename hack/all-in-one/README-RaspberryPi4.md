@@ -1,6 +1,8 @@
 Fedora 34 on a Raspberry Pi 4
 =============================
 
+## Instructions for running microshift
+
 ### On the Mac
 ```
 Download Fedora Server 34 raw image for aarch64 https://download.fedoraproject.org/pub/fedora/linux/releases/34/Server/aarch64/images/Fedora-Server-34-1.2.aarch64.raw.xz
@@ -76,3 +78,6 @@ mv kubectl /usr/local/bin
 export KUBECONFIG=/var/lib/microshift/resources/kubeadmin/kubeconfig
 watch "kubectl get nodes;kubectl get pods -A;crictl images;crictl pods"
 ```
+
+## Samples
+Run the mysql and nginx samples as mentioned at https://github.com/thinkahead/microshift/blob/main/hack/all-in-one/README-Jetson-Nano.md#samples-to-run-on-microshift
