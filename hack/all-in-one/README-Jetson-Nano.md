@@ -42,6 +42,8 @@ Connect to your Jetson nano ip address and login with password dlinano [http://1
 You can run the notebook /hello_camera/usb_camera.ipynb and test the camera. After testing, release the camera resource and shutdown the kernel.
 
 ### Testing the USB camera attached to Jetson Nano with gstreamer on Mac
+Reference https://github.com/dusty-nv/jetson-inference/blob/master/docs/aux-streaming.md#transmitting-rtp
+
 On Mac
 - Install gstreamer pkg from https://gstreamer.freedesktop.org/data/pkg/osx/1.19.2/
 - Install gst-libav
@@ -637,10 +639,13 @@ b1331d994b844       5 minutes ago       Ready               service-ca-58798776f
 ### Use the oc client
 ```
 wget https://mirror.openshift.com/pub/openshift-v4/arm64/clients/ocp/candidate/openshift-client-linux.tar.gz
+mkdir tmp;cd tmp
 tar -zxvf ../openshift-client-linux.tar.gz
 cp oc /usr/local/bin
 # export the correct KUBECONFIG
+export KUBECONFIG=/var/lib/microshift/resources/kubeadmin/kubeconfig
 oc get pods -A
+cd ..;rm -rf tmp
 ```
 
 ### Errors
