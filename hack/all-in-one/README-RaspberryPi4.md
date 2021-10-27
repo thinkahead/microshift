@@ -49,7 +49,7 @@ cat << EOF > /etc/cni/net.d/100-crio-bridge.conf
 EOF
 dnf install -y microshift
 
-hostnamectl set-hostname fedora.example.com # This 
+hostnamectl set-hostname fedora.example.com # the host needs a fqdn domain for microshift to work well
 systemctl enable crio
 systemctl start crio
 systemctl enable microshift
