@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta name="google-site-verification" content="" />
+    <meta name="yandex-verification" content="" />
+    <meta charset="UTF-8">
+    <script src="//use.fontawesome.com/releases/v5.1.0/js/all.js" integrity="sha384-3LK/3kTpDE/Pkp8gTNp2gR/2gOiwQ6QaO7Td0zV76UFJVhqLl4Vl3KL1We6q6wR9" crossorigin="anonymous"></script>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    <title>The  Project | MicroShift</title>
+    <!-- # Opengraph protocol properties: https://ogp.me/ -->
+    <meta name="author" content="The MicroShift website team, " >
+    
+    <meta name="twitter:card" content="summary">
+    <meta name="keywords" content="microshift project, edge, µShift" >
+    <meta property="og:type" content="website">
+    <meta property="og:image" content="https://microshift.io">
+    <meta property="og:article:author" content="The MicroShift website team" >
+    <meta property="og:article:published_time" content="2021-11-03 19:26:15 -0500" >
+    <meta name="twitter:title" content="The  Project | MicroShift">
+    <meta name="twitter:description" content="MicroShift is a research project that is exploring how OpenShift Kubernetes can be optimized for small form factor and edge computing.">
+
+
+<!-- Begin Jekyll SEO tag v2.7.1 -->
+<title>The Project | MicroShift</title>
+<meta name="generator" content="Jekyll v3.9.0" />
+<meta property="og:title" content="The Project" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="MicroShift is a research project that is exploring how OpenShift Kubernetes can be optimized for small form factor and edge computing." />
+<meta property="og:description" content="MicroShift is a research project that is exploring how OpenShift Kubernetes can be optimized for small form factor and edge computing." />
+<link rel="canonical" href="https://microshift.io/" />
+<meta property="og:url" content="https://microshift.io/" />
+<meta property="og:site_name" content="MicroShift" />
+<meta name="twitter:card" content="summary" />
+<meta property="twitter:title" content="The Project" />
+<script type="application/ld+json">
+{"url":"https://microshift.io/","@type":"WebSite","description":"MicroShift is a research project that is exploring how OpenShift Kubernetes can be optimized for small form factor and edge computing.","headline":"The Project","name":"MicroShift","@context":"https://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+
+    <link rel="stylesheet" href="/assets/css/style.css?v=7ff75b11c53b830f8fb407258ae4295a11f289d9">
+    <!--[if lt IE 9]>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv.min.js"></script>
+    <![endif]-->
+  </head>
+  <body><header class="site-header">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/">MicroShift</a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger"><a class="page-link" href="/">The  Project</a><a class="page-link" href="/design/design.html">Design doc.</a><a class="page-link" href="/microshift-aio/README.html">All-In-One</a><a class="page-link" href="/microshift-containerized/README.html">Containerized</a><a class="page-link" href="/known-issues.html">Known Issues</a></div>
+      </nav></div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post">
+
+  <header class="post-header">
+    <h1 class="post-title">The  Project</h1>
+  </header>
+
+  <div class="post-content">
+    <p>MicroShift is a research project that is exploring how OpenShift<sup>1</sup> Kubernetes can be optimized for small form factor and edge computing.</p>
+
+<p>Edge devices deployed out in the field pose very different operational, environmental, and business challenges from those of cloud computing. These motivate different engineering trade-offs for Kubernetes at the far edge than for cloud or near-edge scenarios. MicroShift’s design goals cater to this:</p>
+
+<ul>
+  <li>make frugal use of system resources (CPU, memory, network, storage, etc.),</li>
+  <li>tolerate severe networking constraints,</li>
+  <li>update (resp. roll back) securely, safely, speedily, and seamlessly (without disrupting workloads), and</li>
+  <li>build on and integrate cleanly with edge-optimized OSes like Fedora IoT and RHEL for Edge, while</li>
+  <li>providing a consistent development and management experience with standard OpenShift.</li>
+</ul>
+
+<p>We believe these properties should also make MicroShift a great tool for other use cases such as Kubernetes applications development on resource-constrained systems, scale testing, and provisioning of lightweight Kubernetes control planes.</p>
+
+<p>Watch this <a href="https://youtu.be/QOiB8NExtA4">end-to-end MicroShift provisioning demo video</a> to get a first impression of MicroShift deployed onto a <a href="https://www.redhat.com/en/technologies/linux-platforms/enterprise-linux/edge-computing">RHEL for edge computing</a> device and managed through <a href="https://github.com/open-cluster-management">Open Cluster Management</a>.</p>
+
+<div class="premonition warning"><div class="fa fa-exclamation-circle"></div><div class="content"><p>MicroShift is still early days and moving fast. Features are missing. Things break. But you can still help shape it, too.**</p>
+
+
+</div></div>
+
+<p><sup>1) more precisely <a href="https://www.okd.io/">OKD</a>, the Kubernetes distribution by the OpenShift community</sup></p>
+
+<h2 id="minimum-specs">Minimum specs</h2>
+
+<p>In order to run MicroShift, you will need at least:</p>
+
+<ul>
+  <li>2 CPU cores</li>
+  <li>2GB of RAM</li>
+  <li>~124MB of free storage space for the MicroShift binary</li>
+  <li>64-bit CPU (although 32-bit is <em>technically</em> possible, if you’re up for the challenge)</li>
+</ul>
+
+<p>For barebones development the minimum requirement is 3GB of RAM, though this can increase
+if you are using resource-intensive devtools.</p>
+
+<h3 id="os-requirements">OS Requirements</h3>
+
+<p>The all-in-one containerized MicroShift can run on Windows, MacOS, and Linux.</p>
+
+<p>Currently, the MicroShift binary is known to be supported on the following Operating Systems:</p>
+
+<ul>
+  <li>Fedora 33/34</li>
+  <li>CentOS 8 Stream</li>
+  <li>RHEL 8</li>
+  <li>CentOS 7</li>
+  <li>Ubuntu 20.04</li>
+</ul>
+
+<p>It may be possible to run MicroShift on other systems, however they haven’t been tested so you may run into issues.</p>
+
+<h2 id="using-microshift">Using MicroShift</h2>
+
+<p>To give MicroShift a try, simply install a recent test version (we don’t provide stable releases yet) on a Fedora-derived Linux distro (we’ve only tested Fedora, RHEL, and CentOS Stream so far) using:</p>
+
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="syntax"><code>curl <span class="nt">-sfL</span> https://raw.githubusercontent.com/redhat-et/microshift/main/install.sh | bash
+</code></pre></div></div>
+
+<p>This will install MicroShift’s dependencies (CRI-O), install it as a systemd service and start it.</p>
+
+<p>For convenience, the script will also add a new “microshift” context to your <code class="language-plaintext highlighter-rouge">$HOME/.kube/config</code>, so you’ll be able to access your cluster using, e.g.:</p>
+
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="syntax"><code>kubectl get all <span class="nt">-A</span> <span class="nt">--context</span> microshift
+</code></pre></div></div>
+
+<p>or</p>
+
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="syntax"><code>kubectl config use-context microshift
+kubectl get all <span class="nt">-A</span>
+</code></pre></div></div>
+
+<div class="premonition info"><div class="fa fa-info-circle"></div><div class="content"><p>When installing MicroShift on a system with an older version already installed, it is safest to remove the old data directory and start fresh:</p>
+
+
+</div></div>
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="syntax"><code><span class="nb">rm</span> <span class="nt">-rf</span> /var/lib/microshift <span class="o">&amp;&amp;</span> <span class="nb">rm</span> <span class="nt">-r</span> <span class="nv">$HOME</span>/.microshift
+</code></pre></div></div>
+
+<h2 id="known-issues"><a href="/known-issues.html">Known Issues</a></h2>
+
+<h2 id="developing-microshift">Developing MicroShift</h2>
+
+<div class="premonition warning"><div class="fa fa-exclamation-circle"></div><div class="content"><p>when building or running <strong>ARM64</strong> container images, Linux host environments must have the <code class="language-plaintext highlighter-rouge">qemu-user-static</code> package installed. E.g. on Fedora: <code class="language-plaintext highlighter-rouge">dnf install qemu-user-static</code>.</p>
+
+
+</div></div>
+<h3 id="building">Building</h3>
+
+<p>You can locally build MicroShift using one of two methods, either using a container build (recommended) on Podman or Docker:</p>
+
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="syntax"><code><span class="nb">sudo </span>yum <span class="nt">-y</span> <span class="nb">install </span>make golang
+make microshift
+</code></pre></div></div>
+
+<p>or directly on the host after installing the build-time dependencies. When using RHEL ensure the system is registered and run the following before installing the prerequisites.</p>
+
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="syntax"><code><span class="nv">ARCH</span><span class="o">=</span><span class="si">$(</span> /bin/arch <span class="si">)</span>
+<span class="nb">sudo </span>subscription-manager repos <span class="nt">--enable</span> <span class="s2">"codeready-builder-for-rhel-8-</span><span class="k">${</span><span class="nv">ARCH</span><span class="k">}</span><span class="s2">-rpms"</span>
+</code></pre></div></div>
+
+<p>The following packages are required for Fedora and RHEL.</p>
+
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="syntax"><code><span class="nb">sudo </span>yum <span class="nb">install</span> <span class="nt">-y</span> glibc-static gcc make golang
+make
+</code></pre></div></div>
+
+<h3 id="environment-configuration">Environment Configuration</h3>
+
+<p>Before running MicroShift, the host must first be configured. This can be handled by running</p>
+
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="syntax"><code><span class="nv">CONFIG_ENV_ONLY</span><span class="o">=</span><span class="nb">true</span> ./install.sh
+</code></pre></div></div>
+
+<p>MicroShift keeps all its state in its data-dir, which defaults to <code class="language-plaintext highlighter-rouge">/var/lib/microshift</code> when running MicroShift as privileged user and <code class="language-plaintext highlighter-rouge">$HOME/.microshift</code> otherwise. Note that running MicroShift unprivileged only works without node role at the moment (i.e. using <code class="language-plaintext highlighter-rouge">--roles=controlplane</code> instead of the default of <code class="language-plaintext highlighter-rouge">--roles=controlplane,node</code>).</p>
+
+<h3 id="kubeconfig">Kubeconfig</h3>
+
+<p>When starting the MicroShift for the first time the Kubeconfig file is created. If you need it for another user or to use externally the kubeadmin’s kubeconfig is placed at <code class="language-plaintext highlighter-rouge">/var/lib/microshift/resources/kubeadmin/kubeconfig</code>.</p>
+
+<h3 id="contributing">Contributing</h3>
+
+<p>For more information on working with MicroShift, you can find a contributor’s guide in <a href="./CONTRIBUTING.md">CONTRIBUTING.md</a></p>
+
+<h3 id="community">Community</h3>
+
+<p>Join us on <a href="https://microshift.slack.com">Slack</a>!</p>
+
+<p>Community meetings are held weekly, Wednesdays at 10:30AM - 11:00AM EST. Be sure to join the community <a href="https://calendar.google.com/calendar/embed?src=nj6l882mfe4d2g9nr1h7avgrcs%40group.calendar.google.com&amp;ctz=America%2FChicago">calendar</a>! Click “Google Calendar” in the lower right hand corner to subscribe.</p>
+
+  </div>
+
+</article>
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/"></data>
+
+  <div class="wrapper">
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col">
+        <p class="feed-subscribe">
+          <a href="/feed.xml">
+            <svg class="svg-icon orange">
+              <use xlink:href="/assets/minima-social-icons.svg#rss"></use>
+            </svg><span>Subscribe</span>
+          </a>
+        </p>
+      </div>
+      <div class="footer-col">
+        <p>MicroShift is a research project that is exploring how OpenShift Kubernetes can be optimized for small form factor and edge computing.</p>
+      </div>
+    </div>
+
+    <div class="social-links"><ul class="social-media-list"></ul>
+</div>
+
+  </div>
+
+</footer>
+</body>
+
+</html>

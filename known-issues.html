@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta name="google-site-verification" content="" />
+    <meta name="yandex-verification" content="" />
+    <meta charset="UTF-8">
+    <script src="//use.fontawesome.com/releases/v5.1.0/js/all.js" integrity="sha384-3LK/3kTpDE/Pkp8gTNp2gR/2gOiwQ6QaO7Td0zV76UFJVhqLl4Vl3KL1We6q6wR9" crossorigin="anonymous"></script>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    <title>Known Issues | MicroShift</title>
+    <!-- # Opengraph protocol properties: https://ogp.me/ -->
+    <meta name="author" content="The MicroShift website team, " >
+    
+    <meta name="twitter:card" content="summary">
+    <meta name="keywords" content="known issues, troubleshooting" >
+    <meta property="og:type" content="website">
+    <meta property="og:image" content="https://microshift.io">
+    <meta property="og:article:author" content="The MicroShift website team" >
+    <meta property="og:article:published_time" content="2021-11-03 19:26:15 -0500" >
+    <meta name="twitter:title" content="Known Issues | MicroShift">
+    <meta name="twitter:description" content="MicroShift is a research project that is exploring how OpenShift Kubernetes can be optimized for small form factor and edge computing.">
+
+
+<!-- Begin Jekyll SEO tag v2.7.1 -->
+<title>Known Issues | MicroShift</title>
+<meta name="generator" content="Jekyll v3.9.0" />
+<meta property="og:title" content="Known Issues" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="MicroShift is a research project that is exploring how OpenShift Kubernetes can be optimized for small form factor and edge computing." />
+<meta property="og:description" content="MicroShift is a research project that is exploring how OpenShift Kubernetes can be optimized for small form factor and edge computing." />
+<link rel="canonical" href="https://microshift.io/known-issues.html" />
+<meta property="og:url" content="https://microshift.io/known-issues.html" />
+<meta property="og:site_name" content="MicroShift" />
+<meta name="twitter:card" content="summary" />
+<meta property="twitter:title" content="Known Issues" />
+<script type="application/ld+json">
+{"url":"https://microshift.io/known-issues.html","@type":"WebPage","description":"MicroShift is a research project that is exploring how OpenShift Kubernetes can be optimized for small form factor and edge computing.","headline":"Known Issues","@context":"https://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+
+    <link rel="stylesheet" href="/assets/css/style.css?v=7ff75b11c53b830f8fb407258ae4295a11f289d9">
+    <!--[if lt IE 9]>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv.min.js"></script>
+    <![endif]-->
+  </head>
+  <body><header class="site-header">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/">MicroShift</a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger"><a class="page-link" href="/">The  Project</a><a class="page-link" href="/design/design.html">Design doc.</a><a class="page-link" href="/microshift-aio/README.html">All-In-One</a><a class="page-link" href="/microshift-containerized/README.html">Containerized</a><a class="page-link" href="/known-issues.html">Known Issues</a></div>
+      </nav></div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post">
+
+  <header class="post-header">
+    <h1 class="post-title">Known Issues</h1>
+  </header>
+
+  <div class="post-content">
+    <h2 id="on-ec2-with-rhel-84">On EC2 with RHEL 8.4</h2>
+
+<h3 id="service-ca-cant-be-created"><code class="language-plaintext highlighter-rouge">service-ca</code> can’t be created</h3>
+
+<p>If you want to run <code class="language-plaintext highlighter-rouge">microshift</code> on EC2 RHEL 8.4(<code class="language-plaintext highlighter-rouge">cat /etc/os-release</code>), you might find <a href="https://github.com/redhat-et/microshift/issues/270"><code class="language-plaintext highlighter-rouge">ingress and service-ca will not stay online</code></a>.</p>
+
+<p>Inside the failing pods, you might find errors as: <code class="language-plaintext highlighter-rouge">10.43.0.1:443: read: connection timed out</code>.</p>
+
+<p>This a <a href="https://bugzilla.redhat.com/show_bug.cgi?id=1912236#c30">known issue</a> on RHEL 8.4 and will be resolved in 8.5.</p>
+
+<p>In order to work on RHEL 8.4, you may disable the networkManager and reboot to resolve this issue.</p>
+
+<p>Eg:</p>
+
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="syntax"><code>systemctl disable nm-cloud-setup.service nm-cloud-setup.timer
+reboot
+</code></pre></div></div>
+
+<p>You can find the details of this EC2 networkManage issue tracked at <a href="https://gitlab.freedesktop.org/NetworkManager/NetworkManager/-/issues/740">issue</a>.</p>
+
+<h3 id="openshift-pods-restarts-on-crashloopbackoff">Openshift pods restarts on <code class="language-plaintext highlighter-rouge">CrashLoopBackOff</code></h3>
+
+<p>A few minutes after <code class="language-plaintext highlighter-rouge">microshift</code> started, openshift pods fall into <code class="language-plaintext highlighter-rouge">CrashLoopBackOff</code>.</p>
+
+<p>If you check up the <code class="language-plaintext highlighter-rouge">journalctl |grep iptables</code>, you may see the following:</p>
+
+<pre><code class="language-log">
+Sep 21 19:12:54 ip-172-31-85-30.ec2.internal microshift[1297]: I0921 19:12:54.399365    1297 server_others.go:185] Using iptables Proxier.
+Sep 21 19:13:50 ip-172-31-85-30.ec2.internal kernel: iptables[2438]: segfault at 88 ip 00007feaf5dc0e47 sp 00007fff6f2fea08 error 4 in libnftnl.so.11.3.0[7feaf5dbc000+16000]
+Sep 21 19:13:50 ip-172-31-85-30.ec2.internal systemd-coredump[2442]: Process 2438 (iptables) of user 0 dumped core.
+Sep 21 20:35:57 ip-172-31-85-30.ec2.internal microshift[1297]: E0921 20:35:57.914558    1297 remote_runtime.go:143] StopPodSandbox "1ae45abde0b46d8ea5176b6a00f0e5b4291e6bb496762ca25a4196a5f18d0475" from runtime service failed: rpc error: code = Unknown desc = failed to destroy network for pod sandbox k8s_service-ca-64547678c6-2nxnp_openshift-service-ca_6236deba-fc5f-4915-817d-f8699a4accfc_0(1ae45abde0b46d8ea5176b6a00f0e5b4291e6bb496762ca25a4196a5f18d0475): error removing pod openshift-service-ca_service-ca-64547678c6-2nxnp from CNI network "crio": running [/usr/sbin/iptables -t nat -D POSTROUTING -s 10.42.0.3 -j CNI-d5d0edec163ce01e4591c1c4 -m comment --comment name: "crio" id: "1ae45abde0b46d8ea5176b6a00f0e5b4291e6bb496762ca25a4196a5f18d0475" --wait]: exit status 2: iptables v1.8.4 (nf_tables): Chain 'CNI-d5d0edec163ce01e4591c1c4' does not exist
+</code></pre>
+
+<p>Also, the <code class="language-plaintext highlighter-rouge">openshift-ingress</code> pod will faild on:</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="syntax"><code><span class="go">I0921 17:36:17.811391       1 router.go:262] router "msg"="router is including routes in all namespaces"
+E0921 17:36:17.914638       1 haproxy.go:418] can't scrape HAProxy: dial unix /var/lib/haproxy/run/haproxy.sock: connect: no such file or directory
+I0921 17:36:17.948417       1 router.go:579] template "msg"="router reloaded"  "output"=" - Checking http://localhost:80 ...\n - Health check ok : 0 retry attempt(s).\n"
+</span></code></pre></div></div>
+
+<p>As a workaround, you can follow steps below:</p>
+
+<ul>
+  <li>
+    <p>delete <code class="language-plaintext highlighter-rouge">flannel</code> daemonset</p>
+
+    <div class="language-sh highlighter-rouge"><div class="highlight"><pre class="syntax"><code>kubectl delete ds <span class="nt">-n</span> kube-system kube-flannel-ds
+</code></pre></div>    </div>
+  </li>
+  <li>
+    <p>restart all the openshift pods.</p>
+  </li>
+</ul>
+
+<p>This workaround won’t affect the single node <code class="language-plaintext highlighter-rouge">microshift</code> functionality since the <code class="language-plaintext highlighter-rouge">flannel</code> daemonset is used for multi-node microshift.</p>
+
+<p>This issue is tracked at: <a href="https://github.com/redhat-et/microshift/issues/296">#296</a></p>
+
+  </div>
+
+</article>
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/"></data>
+
+  <div class="wrapper">
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col">
+        <p class="feed-subscribe">
+          <a href="/feed.xml">
+            <svg class="svg-icon orange">
+              <use xlink:href="/assets/minima-social-icons.svg#rss"></use>
+            </svg><span>Subscribe</span>
+          </a>
+        </p>
+      </div>
+      <div class="footer-col">
+        <p>MicroShift is a research project that is exploring how OpenShift Kubernetes can be optimized for small form factor and edge computing.</p>
+      </div>
+    </div>
+
+    <div class="social-links"><ul class="social-media-list"></ul>
+</div>
+
+  </div>
+
+</footer>
+</body>
+
+</html>
