@@ -15,8 +15,8 @@ spec:
       containers:
       - name: sensehat
         image: docker.io/karve/sensehat
-        imagePullPolicy: IfNotPresent
-        command: ["/bin/bash","-c","sleep infinity"]
+        imagePullPolicy: Always
+        #command: ["/bin/bash","-c","sleep infinity"]
         securityContext:
           privileged: true
         ports:
