@@ -182,3 +182,85 @@ watch "kubectl get nodes;kubectl get pods -A;crictl images;crictl pods"
 journalctl -u microshift -f
 journalctl -u crio -f
 ```
+
+Downloading cni plugins
+=======================
+- https://github.com/containernetworking/plugins/releases/
+- https://github.com/flannel-io/cni-plugin/releases
+```
+wget https://github.com/containernetworking/plugins/releases/download/v1.0.1/cni-plugins-linux-arm64-v1.0.1.tgz
+wget https://github.com/flannel-io/cni-plugin/releases/download/v1.0.0/flannel-arm64
+mv flannel-arm64 /usr/libexec/cni/flannel
+```
+
+Installing sense_hat and RTIMULib on CentOS 8
+=============================================
+1. Install sensehat
+```
+yum -y install zlib zlib-devel libjpeg-devel gcc gcc-c++ i2c-tools python3-devel python3 python3-pip
+pip3 install Cython Pillow numpy sense_hat
+```
+2. Install RTIMULib
+```
+git clone https://github.com/RPi-Distro/RTIMULib.git
+# git clone https://github.com/HongshiTan/RTIMULib2.git # Not supported, does not work
+cd RTIMULib/
+cd Linux/python
+python3 setup.py build
+python3 setup.py install
+cd ../..
+cd RTIMULib
+mkdir build
+cd build
+cmake ..
+make -j4
+make install
+ldconfig
+cd /root/RTIMULib/Linux/RTIMULibDrive11
+make -j4
+make install
+RTIMULibDrive11
+cd /root/RTIMULib/Linux/RTIMULibDrive10
+make -j4
+make install
+RTIMULibDrive10
+
+yum -y install qt5-qtbase-devel
+cd /root/RTIMULib/Linux/RTIMULibDemoGL
+qmake-qt5
+make -j4
+make install
+```
+
+Samples to run on Raspberry Pi 4
+================================
+../../raspberry-pi/sensehat/README.md
+
+Problems
+========
+1. The pod cannot resolve external ip addresses, to fix this, run
+```
+firewall-cmd --permanent --direct --add-rule ipv4 filter INPUT 1 -i cni0 -s 10.42.0.0/16 -j ACCEPT
+firewall-cmd --permanent --direct --add-rule ipv4 filter FORWARD 1 -s 10.42.0.0/15 -j ACCEPT
+firewall-cmd --reload
+```
+or
+```
+systemctl stop firewalld
+```
+Reference https://github.com/k3s-io/k3s/issues/24#issuecomment-475567218
+
+Installing pip and sense_hat on CentOS7
+=======================================
+1. Installing pip
+```
+wget https://files.pythonhosted.org/packages/0f/74/ecd13431bcc456ed390b44c8a6e917c1820365cbebcb6a8974d1cd045ab4/pip-10.0.1-py2.py3-none-any.whl
+python pip-10.0.1-py2.py3-none-any.whl/pip install --no-index pip-10.0.1-py2.py3-none-any.whl
+```
+2. SenseHat wheel https://pypi.org/project/sense-hat/#files
+```
+wget https://files.pythonhosted.org/packages/13/cd/f30b6709e01cacd0f9e2882ce3c0633ea2862771a75f4a9d02a56db9ec9a/sense_hat-2.2.0-py2.py3-none-any.whl
+python pip-10.0.1-py2.py3-none-any.whl/pip install --no-index sense_hat-2.2.0-py2.py3-none-any.whl
+```
+
+
