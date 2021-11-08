@@ -151,11 +151,11 @@ hostnamectl set-hostname centos.example.com
     ls -l /sys/fs/cgroup/cpu/cpu.cfs_quota_us # This needs to be present for microshift to work
     ```
 
-References
-- https://github.com/cri-o/cri-o/issues/4307
-- https://github.com/kubernetes/kubeadm/issues/2335#issuecomment-716989252
-- https://forums.centos.org/viewtopic.php?f=55&t=76363#p321465
-- https://people.centos.org/pgreco/rpi_aarch64_el8/
+    3. References
+        - https://github.com/cri-o/cri-o/issues/4307
+        - https://github.com/kubernetes/kubeadm/issues/2335#issuecomment-716989252
+        - https://forums.centos.org/viewtopic.php?f=55&t=76363#p321465
+        - https://people.centos.org/pgreco/rpi_aarch64_el8/
 
 7. Setup crio and microshift
 ```
