@@ -129,6 +129,7 @@ hostnamectl set-hostname centos.example.com
     ```
     ls -l /sys/fs/cgroup/cpu/cpu.cfs_quota_us # This needs to be present for microshift to work, Let's fix it
     ```
+    References:
         - https://github.com/cri-o/cri-o/issues/4307
         - https://github.com/kubernetes/kubeadm/issues/2335#issuecomment-716989252
         - https://forums.centos.org/viewtopic.php?f=55&t=76363#p321465
