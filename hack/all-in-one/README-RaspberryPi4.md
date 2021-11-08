@@ -130,7 +130,7 @@ hostnamectl set-hostname centos.example.com
     ls -l /sys/fs/cgroup/cpu/cpu.cfs_quota_us # This needs to be present for microshift to work, Let's fix it
     ```
 
-    Change kernel from raspberrypi2-kernel4-5.4.60-v8.1.el8.aarch64 to raspberrypi2-kernel4.5.4.155-v8.1.el8
+    Change kernel from raspberrypi2-kernel4-5.4.60-v8.1.el8.aarch64 to raspberrypi2-kernel4.5.4.155-v8.1.el8 as follows:
 
     Create /etc/yum.repos.d/pgrepo.repo
     ```
