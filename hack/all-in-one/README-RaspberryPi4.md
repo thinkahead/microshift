@@ -107,7 +107,7 @@ dnf swap centos-{linux,stream}-repos
 dnf distro-sync
 ```
 
-4. Add you public key
+4. Add your public key
 ```
 mkdir ~/.ssh
 vi ~/.ssh/authorized_keys
@@ -120,7 +120,7 @@ chmod 644 ~/.ssh/authorized_keys
 hostnamectl set-hostname centos.example.com
 ```
 
-5. Update kernel and kernel parameters
+6. Update kernel and kernel parameters
     1. To avoid the "Error: Following Cgroup subsystem not mounted: [memory]", append the following to /boot/cmdline.txt
     ```
      cgroup_enable=cpuset cgroup_memory=1 cgroup_enable=memory
@@ -146,7 +146,7 @@ hostnamectl set-hostname centos.example.com
     ls -l /sys/fs/cgroup/cpu/cpu.cfs_quota_us # This should be present for microshift to work
     ```
 
-6. Setup crio and microshift
+7. Setup crio and microshift
 ```
 rpm -qi selinux-policy # selinux-policy-3.14.3-82.el8
 dnf -y install 'dnf-command(copr)'
@@ -161,13 +161,16 @@ sudo curl -L -o /etc/yum.repos.d/devel:kubic:libcontainers:stable:cri-o:${VERSIO
 cat /etc/yum.repos.d/devel\:kubic\:libcontainers\:stable\:cri-o\:${VERSION}.repo
 
 dnf -y install cri-o cri-tools microshift
-systemctl enable --now crio
 ```
 
-7. Check that cni plugins
+Check that cni plugins and present and start microshift
 ```
 ls /opt/cni/bin/ # empty
 ls  /usr/libexec/cni # cni plugins
+systemctl enable --now crio
+systemctl start crio
+systemctl enable --now microshift
+systemctl start microshift
 ```
 
 8. Download kubectl and test microshift
