@@ -87,7 +87,7 @@ CentOS 8 on a Raspberry Pi 4
 
 1. Download the CentOS image and write to Microsdxc
     1. Either use the image from https://people.centos.org/pgreco/CentOS-Userland-8-stream-aarch64-RaspberryPI-Minimal-4/ or
-https://people.centos.org/pgreco/CentOS-Userland-8-aarch64-RaspberryPI-Minimal-4/ and convert to stream https://ostechnix.com/how-to-migrate-to-centos-stream-8-from-centos-linux-8/
+https://people.centos.org/pgreco/CentOS-Userland-8-aarch64-RaspberryPI-Minimal-4/ (For latter, we will convert to stream https://ostechnix.com/how-to-migrate-to-centos-stream-8-from-centos-linux-8/ in Section 3 below)
     2. Write to Microsdxc card
     3. Insert Microsdxc into Raspberry Pi4 and poweron
     4. Login using root/centos
@@ -99,7 +99,7 @@ sudo fdisk -lu
 resize2fs /dev/mmcblk0p3
 ```
 
-If you used the non-stream image, convert to stream as follows after boot
+3. If you used the non-stream image, convert to stream
 ```
 cat /etc/redhat-release
 dnf install centos-release-stream
@@ -107,7 +107,7 @@ dnf swap centos-{linux,stream}-repos
 dnf distro-sync
 ```
 
-3. Add you public key
+4. Add you public key
 ```
 mkdir ~/.ssh
 vi ~/.ssh/authorized_keys
@@ -115,36 +115,36 @@ chmod 600 ~/.ssh
 chmod 644 ~/.ssh/authorized_keys
 ```
 
-4. Set the hostname with a domain
+5. Set the hostname with a domain
 ```
 hostnamectl set-hostname centos.example.com
 ```
 
 5. Update kernel and kernel parameters
     1. To avoid the "Error: Following Cgroup subsystem not mounted: [memory]", append the following to /boot/cmdline.txt
-```
- cgroup_enable=cpuset cgroup_memory=1 cgroup_enable=memory
-```
+    ```
+     cgroup_enable=cpuset cgroup_memory=1 cgroup_enable=memory
+    ```
     2. Update the kernel to avoid the "Error cannot access '/sys/fs/cgroup/cpu/cpu.cfs_quota_us': No such file or directory"
         - https://github.com/cri-o/cri-o/issues/4307
         - https://github.com/kubernetes/kubeadm/issues/2335#issuecomment-716989252
         - https://forums.centos.org/viewtopic.php?f=55&t=76363#p321465
         - https://people.centos.org/pgreco/rpi_aarch64_el8/
     Change kernel from raspberrypi2-kernel4-5.4.60-v8.1.el8.aarch64 to raspberrypi2-kernel4.5.4.155-v8.1.el8
-Create /etc/yum.repos.d/pgrepo.repo
-```
-[pgrepo]
-name=Raspberry Pi Kernel raspberrypi2-kernel4.5.4.155-v8.1.el8
-type=rpm-md
-baseurl=https://people.centos.org/pgreco/rpi_aarch64_el8/
-gpgcheck=0
-enabled=1
-dnf -y update
+    Create /etc/yum.repos.d/pgrepo.repo
+    ```
+    [pgrepo]
+    name=Raspberry Pi Kernel raspberrypi2-kernel4.5.4.155-v8.1.el8
+    type=rpm-md
+    baseurl=https://people.centos.org/pgreco/rpi_aarch64_el8/
+    gpgcheck=0
+    enabled=1
+    dnf -y update
 
-reboot
+    reboot
 
-ls -l /sys/fs/cgroup/cpu/cpu.cfs_quota_us # This should be present for microshift to work
-```
+    ls -l /sys/fs/cgroup/cpu/cpu.cfs_quota_us # This should be present for microshift to work
+    ```
 
 6. Setup crio and microshift
 ```
