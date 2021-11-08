@@ -234,21 +234,25 @@ make install
 
 Samples to run on Raspberry Pi 4
 ================================
-../../raspberry-pi/sensehat/README.md
+https://github.com/thinkahead/microshift/blob/main/raspberry-pi/sensehat/README.md
 
 Problems
 ========
 1. The pod cannot resolve external ip addresses, to fix this, run
 ```
+systemctl stop firewalld
+```
+or https://github.com/k3s-io/k3s/issues/24#issuecomment-475567218
+```
 firewall-cmd --permanent --direct --add-rule ipv4 filter INPUT 1 -i cni0 -s 10.42.0.0/16 -j ACCEPT
 firewall-cmd --permanent --direct --add-rule ipv4 filter FORWARD 1 -s 10.42.0.0/15 -j ACCEPT
 firewall-cmd --reload
 ```
-or
+or https://github.com/k3s-io/k3s/issues/24#issuecomment-614330334
 ```
-systemctl stop firewalld
+firewall-cmd --permanent --direct --add-rule ipv4 filter FORWARD 0 -i cni0 -j ACCEPT
+firewall-cmd --reload
 ```
-Reference https://github.com/k3s-io/k3s/issues/24#issuecomment-475567218
 
 Installing pip and sense_hat on CentOS7
 =======================================
