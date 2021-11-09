@@ -118,12 +118,15 @@ https://people.centos.org/pgreco/CentOS-Userland-8-aarch64-RaspberryPI-Minimal-4
     dnf distro-sync
     ```
 
-4. Add your public key
+4. Add your public key, enable wifi
     ```
     mkdir ~/.ssh
     vi ~/.ssh/authorized_keys
     chmod 600 ~/.ssh
     chmod 644 ~/.ssh/authorized_keys
+
+    nmcli device wifi list
+    nmcli device wifi connect $ssid -ask
     ```
 
 5. Set the hostname with a domain
@@ -190,7 +193,7 @@ https://people.centos.org/pgreco/CentOS-Userland-8-aarch64-RaspberryPI-Minimal-4
     dnf -y install cri-o cri-tools microshift
     ```
 
-    Check that cni plugins and present and start microshift
+    Check that cni plugins are present and start microshift
     ```
     ls /opt/cni/bin/ # empty
     ls /usr/libexec/cni # cni plugins
