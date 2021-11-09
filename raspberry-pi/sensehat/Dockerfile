@@ -3,6 +3,7 @@ MAINTAINER karve@us.ibm.com
 
 RUN apt-get update && apt-get install -y curl python-numpy python-pil 
 RUN apt-get install -y python-pygame fswebcam
+RUN apt-get install -y python-websocket
 WORKDIR /tmp
 
 RUN curl -LO  https://archive.raspberrypi.org/debian/pool/main/r/rtimulib/librtimulib-dev_7.2.1-4_armhf.deb \
@@ -20,7 +21,9 @@ ADD testcam.py /testcam.py
 ADD sparkles.py /sparkles.py
 ADD sendimages1.py /sendimages1.py
 ADD sendimages2.py /sendimages2.py
+ADD sendtonodered.py /sendtonodered.py
+#RUN pip install websocket-client
 
 WORKDIR /
 
-CMD ["python", "/sendimages1.py"]
+CMD ["python", "/sendtonodered.py"]
