@@ -2,10 +2,11 @@ Fedora 34 on a Raspberry Pi 4
 =============================
 
 ## Instructions for running microshift
+Microshift Nightly Fedora 34 aarch64 https://download.copr.fedorainfracloud.org/results/@redhat-et/microshift-nightly/fedora-34-aarch64/
 
 ### On the Mac
-```
 Download Fedora Server 34 raw image for aarch64 https://download.fedoraproject.org/pub/fedora/linux/releases/34/Server/aarch64/images/Fedora-Server-34-1.2.aarch64.raw.xz
+```
 Use the balenaEtcher on Mac to write the above image to MicroSDXC card
 Attach the MicroSDXC card to the Raspberry Pi 4
 ```
@@ -13,7 +14,6 @@ Attach the MicroSDXC card to the Raspberry Pi 4
 ### On the RPI4/ARM64
 - Have a Keyboard and Monitor connected to the Raspberry Pi
 - During first boot, create user fedora. Also set root password
-- Nightly Builds for microshift rpms https://copr.fedorainfracloud.org/coprs/g/redhat-et/microshift-nightly/
 ```
 # ssh as user fedora 
 sudo su -
@@ -26,7 +26,6 @@ sudo pvresize /dev/mmcblk0p3
 sudo lvextend -l +100%FREE /dev/fedora_fedora/root
 # Resize root partition
 sudo xfs_growfs -d /
-
 
 curl https://copr.fedorainfracloud.org/coprs/g/redhat-et/microshift-nightly/repo/fedora-34/group_redhat-et-microshift-nightly-fedora-34.repo -o /etc/yum.repos.d/microshift-nightly-fedora34.repo
 cat << EOF > /etc/cni/net.d/100-crio-bridge.conf
@@ -70,10 +69,18 @@ firewall-cmd --permanent --zone=trusted --add-source=10.42.0.0/16
 firewall-cmd --reload
 firewall-cmd --permanent --change-zone=eth0 --zone=public
 
+# Install kubectl
 ARCH=arm64
 curl -LO "https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/$ARCH/kubectl"
 chmod +x kubectl
 mv kubectl /usr/local/bin
+
+# Install the oc client
+wget https://mirror.openshift.com/pub/openshift-v4/arm64/clients/ocp/candidate/openshift-client-linux.tar.gz
+mkdir tmp;cd tmp
+tar -zxvf ../openshift-client-linux.tar.gz
+mv -f oc /usr/local/bin
+cd ..;rm -rf tmp
 
 export KUBECONFIG=/var/lib/microshift/resources/kubeadmin/kubeconfig
 watch "kubectl get nodes;kubectl get pods -A;crictl images;crictl pods"
@@ -85,7 +92,7 @@ Run the mysql and nginx samples as mentioned at https://github.com/thinkahead/mi
 CentOS 8 on a Raspberry Pi 4
 =============================
 
-1. Download the CentOS image and write to Microsdxc
+1. Download the CentOS image and write to Microsdxc card
     1. Either use the image from https://people.centos.org/pgreco/CentOS-Userland-8-stream-aarch64-RaspberryPI-Minimal-4/ (I did not use this image) or
 https://people.centos.org/pgreco/CentOS-Userland-8-aarch64-RaspberryPI-Minimal-4/ (I used this image). For latter, we will convert to stream as documented at https://ostechnix.com/how-to-migrate-to-centos-stream-8-from-centos-linux-8/ in Section 3 below.
     2. Write to Microsdxc card
@@ -166,12 +173,13 @@ https://people.centos.org/pgreco/CentOS-Userland-8-aarch64-RaspberryPI-Minimal-4
         - https://people.centos.org/pgreco/rpi_aarch64_el8/
 
 7. Setup crio and microshift
+    Microshift Nightly CentOS Stream 8 aarch64 https://download.copr.fedorainfracloud.org/results/@redhat-et/microshift-nightly/centos-stream-8-aarch64/
     ```
     rpm -qi selinux-policy # selinux-policy-3.14.3-82.el8
     dnf -y install 'dnf-command(copr)'
     # dnf -y copr enable rhcontainerbot/container-selinux
     # dnf copr enable @redhat-et/microshift-nightly # Do not use this
-    curl https://copr.fedorainfracloud.org/coprs/g/redhat-et/microshift-nightly/repo/centos-stream-8/   -o /etc/yum.repos.d/microshift-nightly-centos-stream-8.repo
+    curl https://copr.fedorainfracloud.org/coprs/g/redhat-et/microshift-nightly/repo/centos-stream-8/ -o /etc/yum.repos.d/microshift-nightly-centos-stream-8.repo
     cat /etc/yum.repos.d/microshift-nightly-centos-stream-8.repo
 
     VERSION=1.22 # We should probably be using the 1.21, but 1.22 works
@@ -185,19 +193,29 @@ https://people.centos.org/pgreco/CentOS-Userland-8-aarch64-RaspberryPI-Minimal-4
     Check that cni plugins and present and start microshift
     ```
     ls /opt/cni/bin/ # empty
-    ls  /usr/libexec/cni # cni plugins
+    ls /usr/libexec/cni # cni plugins
     systemctl enable --now crio
     systemctl start crio
     systemctl enable --now microshift
     systemctl start microshift
     ```
 
-8. Download kubectl and test microshift
+8. Download kubectl/oc and test microshift
     ```
+    # Install kubectl
     curl -LO "https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/$ARCH/kubectl"
     chmod +x kubectl
     mv kubectl /usr/local/bin
+
+    # Install the oc client
+    wget https://mirror.openshift.com/pub/openshift-v4/arm64/clients/ocp/candidate/openshift-client-linux.tar.gz
+    mkdir tmp;cd tmp
+    tar -zxvf ../openshift-client-linux.tar.gz
+    mv -f oc /usr/local/bin
+    cd ..;rm -rf tmp
+
     watch "kubectl get nodes;kubectl get pods -A;crictl images;crictl pods"
+
     journalctl -u microshift -f
     journalctl -u crio -f
     ```
