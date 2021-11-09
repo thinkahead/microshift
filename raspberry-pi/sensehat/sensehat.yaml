@@ -15,10 +15,17 @@ spec:
       containers:
       - name: sensehat
         image: docker.io/karve/sensehat
-        imagePullPolicy: Always
+        imagePullPolicy: IfNotPresent
         #command: ["/bin/bash","-c","sleep infinity"]
         securityContext:
           privileged: true
+        env:
+          - name: WebSocketURL
+            value: "wss://nodered2021.mybluemix.net/ws/chat"
+          - name: VideoSource
+            value: "/dev/video0"
+          - name: ImageUploadURL
+            value: "http://nodered2021.mybluemix.net/upload"
         ports:
         - containerPort: 8080
         # resource required for hpa
@@ -29,6 +36,10 @@ spec:
           limits:
             memory: 1024M
             cpu: 1000m
+      hostAliases:
+      - hostnames:
+        - nodered2021.mybluemix.net
+        ip: 169.46.89.149
 ---
 apiVersion: v1
 kind: Service
