@@ -1,8 +1,8 @@
 Fedora 34 on a Raspberry Pi 4
 =============================
 
-## Instructions for running microshift
-Microshift Nightly Fedora 34 aarch64 https://download.copr.fedorainfracloud.org/results/@redhat-et/microshift-nightly/fedora-34-aarch64/
+## Instructions for running MicroShift
+MicroShift Nightly Fedora 34 aarch64 https://download.copr.fedorainfracloud.org/results/@redhat-et/microshift-nightly/fedora-34-aarch64/
 
 ### On the Mac
 Download Fedora Server 34 raw image for aarch64 https://download.fedoraproject.org/pub/fedora/linux/releases/34/Server/aarch64/images/Fedora-Server-34-1.2.aarch64.raw.xz
@@ -50,7 +50,7 @@ cat << EOF > /etc/cni/net.d/100-crio-bridge.conf
 EOF
 dnf install -y microshift
 
-hostnamectl set-hostname fedora.example.com # the host needs a fqdn domain for microshift to work well
+hostnamectl set-hostname fedora.example.com # the host needs a fqdn domain for MicroShift to work well
 systemctl enable crio
 systemctl start crio
 systemctl enable microshift
@@ -91,7 +91,7 @@ Run the mysql and nginx samples as mentioned at https://github.com/thinkahead/mi
 
 CentOS 8 on a Raspberry Pi 4
 =============================
-
+## Steps to install and run MicroShift
 1. Download the CentOS image and write to Microsdxc card
     1. Either use the image from https://people.centos.org/pgreco/CentOS-Userland-8-stream-aarch64-RaspberryPI-Minimal-4/ (I did not use this image) or
 https://people.centos.org/pgreco/CentOS-Userland-8-aarch64-RaspberryPI-Minimal-4/ (I used this image). For latter, we will convert to stream as documented at https://ostechnix.com/how-to-migrate-to-centos-stream-8-from-centos-linux-8/ in Section 3 below.
@@ -141,7 +141,7 @@ https://people.centos.org/pgreco/CentOS-Userland-8-aarch64-RaspberryPI-Minimal-4
         ```
     2. Update the kernel to avoid the "Error cannot access '/sys/fs/cgroup/cpu/cpu.cfs_quota_us': No such file or directory"
         ```
-        ls -l /sys/fs/cgroup/cpu/cpu.cfs_quota_us # This needs to be present for microshift to work, Let's fix it
+        ls -l /sys/fs/cgroup/cpu/cpu.cfs_quota_us # This needs to be present for MicroShift to work, Let's fix it
         ```
 
         Change kernel from raspberrypi2-kernel4-5.4.60-v8.1.el8.aarch64 to raspberrypi2-kernel4.5.4.155-v8.1.el8 as follows:
@@ -166,7 +166,7 @@ https://people.centos.org/pgreco/CentOS-Userland-8-aarch64-RaspberryPI-Minimal-4
         ```
         mount | grep cgroup
         cat /proc/cgroups | column -t
-        ls -l /sys/fs/cgroup/cpu/cpu.cfs_quota_us # This needs to be present for microshift to work
+        ls -l /sys/fs/cgroup/cpu/cpu.cfs_quota_us # This needs to be present for MicroShift to work
         ```
 
     3. References
@@ -175,7 +175,7 @@ https://people.centos.org/pgreco/CentOS-Userland-8-aarch64-RaspberryPI-Minimal-4
         - https://forums.centos.org/viewtopic.php?f=55&t=76363#p321465
         - https://people.centos.org/pgreco/rpi_aarch64_el8/
 
-7. Setup crio and microshift
+7. Setup crio and MicroShift
     Microshift Nightly CentOS Stream 8 aarch64 https://download.copr.fedorainfracloud.org/results/@redhat-et/microshift-nightly/centos-stream-8-aarch64/
     ```
     rpm -qi selinux-policy # selinux-policy-3.14.3-82.el8
@@ -193,7 +193,7 @@ https://people.centos.org/pgreco/CentOS-Userland-8-aarch64-RaspberryPI-Minimal-4
     dnf -y install cri-o cri-tools microshift
     ```
 
-    Check that cni plugins are present and start microshift
+    Check that cni plugins are present and start MicroShift
     ```
     ls /opt/cni/bin/ # empty
     ls /usr/libexec/cni # cni plugins
@@ -203,7 +203,7 @@ https://people.centos.org/pgreco/CentOS-Userland-8-aarch64-RaspberryPI-Minimal-4
     systemctl start microshift
     ```
 
-8. Download kubectl/oc and test microshift
+8. Download kubectl/oc and test MicroShift
     ```
     # Install kubectl
     ARCH=arm64
@@ -223,7 +223,7 @@ https://people.centos.org/pgreco/CentOS-Userland-8-aarch64-RaspberryPI-Minimal-4
     journalctl -u microshift -f
     journalctl -u crio -f
     ```
-9. Cleanup microshift/cri-o images and pods
+9. Cleanup MicroShift/cri-o images and pods
     ```
     systemctl stop microshift
     crictl rm --all --force
@@ -236,6 +236,8 @@ https://people.centos.org/pgreco/CentOS-Userland-8-aarch64-RaspberryPI-Minimal-4
     rm -rf /var/lib/containers/*
     systemctl start crio
     ```
+## Errors
+    1. openshift-ingress router-default pod does not start - It is usually when you switch between wlan0 and eth0 or when the ipaddress gets changed. To fix this, run the "Cleanup" and restart MicroShift.
 
 Downloading cni plugins
 =======================
@@ -312,7 +314,7 @@ Problems
 
 Installing pip and sense_hat on CentOS 7
 ========================================
-I tried the armhfp (32 bit) image for CentOS 7 from http://isoredirect.centos.org/altarch/7/isos/armhfp/. The SenseHat worked on this image but I did not install microshift on it.
+I tried the armhfp (32 bit) image for CentOS 7 from http://isoredirect.centos.org/altarch/7/isos/armhfp/. The SenseHat worked on this image but I did not install MicroShift on it.
 1. Installing pip
     ```
     wget https://files.pythonhosted.org/packages/0f/74/ecd13431bcc456ed390b44c8a6e917c1820365cbebcb6a8974d1cd045ab4/pip-10.0.1-py2.py3-none-any.whl
