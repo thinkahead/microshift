@@ -1021,6 +1021,9 @@ spec:
 oc apply -f jupyter.yaml
 ```
 
+6. Sample with Object Detection and sending images to Node Red
+https://github.com/thinkahead/microshift/tree/main/jetson-nano/tests/object-detection
+
 ## Install Metrics Server on Microshift
 ```
 wget https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml -O metrics-server-components.yaml
