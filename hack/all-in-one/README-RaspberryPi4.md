@@ -206,6 +206,7 @@ https://people.centos.org/pgreco/CentOS-Userland-8-aarch64-RaspberryPI-Minimal-4
 8. Download kubectl/oc and test microshift
     ```
     # Install kubectl
+    ARCH=arm64
     curl -LO "https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/$ARCH/kubectl"
     chmod +x kubectl
     mv kubectl /usr/local/bin
