@@ -289,7 +289,8 @@ Installing sense_hat and RTIMULib on CentOS 8
 
 Samples to run on Raspberry Pi 4
 ================================
-https://github.com/thinkahead/microshift/blob/main/raspberry-pi/sensehat/README.md
+- Image using pygame and SenseHat sent to Node Red https://github.com/thinkahead/microshift/blob/main/raspberry-pi/sensehat/README.md
+- Image using cv2, Object Detection using tflite and SenseHat temperature reading sent to Node Red  https://github.com/thinkahead/microshift/blob/main/raspberry-pi/object-detection/README.md
 
 Problems
 ========
