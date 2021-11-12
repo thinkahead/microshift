@@ -223,6 +223,19 @@ https://people.centos.org/pgreco/CentOS-Userland-8-aarch64-RaspberryPI-Minimal-4
     journalctl -u microshift -f
     journalctl -u crio -f
     ```
+9. Cleanup microshift/cri-o images and pods
+    ```
+    systemctl stop microshift
+    crictl rm --all --force
+    crictl rmp --all --force
+    crictl rmi --all
+    pkill -9 conmon
+    pkill -9 pause
+    rm -rf /var/lib/microshift
+    systemctl stop crio
+    rm -rf /var/lib/containers/*
+    systemctl start crio
+    ```
 
 Downloading cni plugins
 =======================
