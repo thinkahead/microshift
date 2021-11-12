@@ -662,7 +662,7 @@ kubectl delete events --field-selector involvedObject.kind=Node
 #### 2. ImageInspectError
 If the pod shows this ImageInspectError state, you may be missing the /etc/containers/registries.conf. You can add that or qualify the image with "docker.io/"  or the correct registry.
 
-#### 3. oc new-project image-stream command don't work
+#### 3. oc new-project image-stream command don't work - This is fixed in latest release
 See https://github.com/redhat-et/microshift/issues/240
 ```
 root@jetson-nano:~# oc new-project alexei
@@ -683,11 +683,12 @@ root@jetson-nano:~/k8s-device-plugin# docker run -it --privileged --network=none
 2021/10/13 16:34:03 Error: failed to initialize NVML: could not load NVML library
 ```
 #### 5. docker: Error response from daemon: failed to create shim: OCI runtime create failed: container_linux.go:380: starting container process caused: error adding seccomp filter rule for syscall clone3: permission denied: unknown.
-Downgrading docker and containerd, there is discussion about this in https://github.com/NVIDIA/nvidia-container-runtime/issues/157
+The problematic docker 20.10.7-0ubuntu5~18.04.3 needs to be downgraded (probably containerd too), there is discussion about this in https://github.com/NVIDIA/nvidia-container-runtime/issues/157
 ```
 wget http://launchpadlibrarian.net/551655684/docker.io_20.10.7-0ubuntu1~18.04.1_arm64.deb
 dpkg -i docker.io_20.10.7-0ubuntu1~18.04.1_arm64.deb
 ```
+
 ### Cleanup microshift/cri-o images and pods
 ```
 systemctl stop microshift
