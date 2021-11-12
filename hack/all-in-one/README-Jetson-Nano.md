@@ -682,7 +682,12 @@ root@jetson-nano:~/k8s-device-plugin# docker run -it --privileged --network=none
 2021/10/13 16:34:03 If this is not a GPU node, you should set up a toleration or nodeSelector to only deploy this plugin on GPU nodes
 2021/10/13 16:34:03 Error: failed to initialize NVML: could not load NVML library
 ```
-
+#### 5. docker: Error response from daemon: failed to create shim: OCI runtime create failed: container_linux.go:380: starting container process caused: error adding seccomp filter rule for syscall clone3: permission denied: unknown.
+Downgrading docker and containerd, there is discussion about this in https://github.com/NVIDIA/nvidia-container-runtime/issues/157
+```
+wget http://launchpadlibrarian.net/551655684/docker.io_20.10.7-0ubuntu1~18.04.1_arm64.deb
+dpkg -i docker.io_20.10.7-0ubuntu1~18.04.1_arm64.deb
+```
 ### Cleanup microshift/cri-o images and pods
 ```
 systemctl stop microshift
