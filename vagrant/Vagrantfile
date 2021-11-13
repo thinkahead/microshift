@@ -1,0 +1,141 @@
+Vagrant.configure("2") do |config|
+  config.vm.box = "fedora/35-cloud-base"
+  config.vm.provider "virtualbox" do |v|
+    # provides 3GB of memory
+    v.memory = 3072
+    # for parallelization
+    v.cpus = 2
+  end
+  config.vm.hostname = 'microshift.example.com'
+  config.vm.provision "shell", inline: <<-SHELL
+dnf -y module enable cri-o:1.19
+dnf -y install cri-o
+curl https://copr.fedorainfracloud.org/coprs/g/redhat-et/microshift-nightly/repo/fedora-34/group_redhat-et-microshift-nightly-fedora-34.repo -o /etc/yum.repos.d/microshift-nightly-fedora34.repo 2>/dev/null
+
+cat << EOF > /etc/cni/net.d/100-crio-bridge.conf
+{
+    "cniVersion": "0.4.0",
+    "name": "crio",
+    "type": "bridge",
+    "bridge": "cni0",
+    "isGateway": true,
+    "ipMasq": true,
+    "hairpinMode": true,
+    "ipam": {
+        "type": "host-local",
+        "routes": [
+            { "dst": "0.0.0.0/0" }
+        ],
+        "ranges": [
+            [{ "subnet": "10.42.0.0/24" }]
+        ]
+    }
+}
+EOF
+
+dnf install -y microshift
+
+hostnamectl set-hostname microshift.example.com # the host needs a fqdn domain for microshift to work well
+
+dnf -y install firewalld wget
+systemctl enable firewalld --now
+firewall-cmd --zone=public --permanent --add-port=6443/tcp
+firewall-cmd --zone=public --permanent --add-port=30000-32767/tcp
+firewall-cmd --zone=public --permanent --add-port=2379-2380/tcp
+firewall-cmd --zone=public --add-masquerade --permanent
+firewall-cmd --zone=public --add-port=80/tcp --permanent
+firewall-cmd --zone=public --add-port=443/tcp --permanent
+firewall-cmd --zone=public --add-port=10250/tcp --permanent
+firewall-cmd --zone=public --add-port=10251/tcp --permanent
+firewall-cmd --permanent --zone=trusted --add-source=10.42.0.0/16
+firewall-cmd --reload
+firewall-cmd --permanent --change-zone=eth0 --zone=public
+
+systemctl enable crio
+systemctl start crio
+systemctl enable microshift
+systemctl start microshift
+
+# Install kubectl
+ARCH=amd64
+curl -LO https://storage.googleapis.com/kubernetes-release/release/`curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt`/bin/linux/$ARCH/kubectl 2>/dev/null
+chmod +x kubectl
+mv kubectl /usr/local/bin
+
+# Install the oc client
+ARCH=x86_64
+wget -q https://mirror.openshift.com/pub/openshift-v4/$ARCH/clients/ocp/candidate/openshift-client-linux.tar.gz
+mkdir tmp;cd tmp
+tar -zxvf ../openshift-client-linux.tar.gz
+mv -f oc /usr/local/bin
+cd ..;rm -rf tmp
+rm -f openshift-client-linux.tar.gz
+
+echo "export KUBECONFIG=/var/lib/microshift/resources/kubeadmin/kubeconfig" >> /root/.bash_profile
+
+# Install helm
+curl -o helm-v3.5.2-linux-amd64.tar.gz https://get.helm.sh/helm-v3.5.2-linux-amd64.tar.gz 2>/dev/null
+tar -zxvf helm-v3.5.2-linux-amd64.tar.gz
+mv -f linux-amd64/helm /usr/local/bin
+rm -rf linux-amd64/
+rm -f helm-v3.5.2-linux-amd64.tar.gz
+
+# Create the yaml for creating the persistent volume for mysql
+tee /root/hostpathpv.yaml << EOF
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: hostpath-provisioner
+spec:
+  #storageClassName: "kubevirt-hostpath-provisioner"
+  capacity:
+    storage: 8Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: "/var/hpvolumes/mysql"
+EOF
+
+tee /root/secpatch.yaml << EOF
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysql
+  namespace: default
+spec:
+  template:
+    spec:
+      containers:
+      - name: mysql
+        securityContext:
+          privileged: true
+      initContainers:
+      - name: remove-lost-found
+        securityContext:
+          privileged: true
+EOF
+
+# Run the runme.sh after the VM boots and microshift is started
+tee /root/runme.sh << EOF
+chmod 600 /var/lib/microshift/resources/kubeadmin/kubeconfig
+rm -rf /var/hpvolumes/mysql
+mkdir /var/hpvolumes/mysql
+#chown systemd-oom:systemd-oom /var/hpvolumes/mysql
+oc delete -f hostpathpv.yaml
+helm repo add stable https://charts.helm.sh/stable
+helm install mysql stable/mysql --set persistence.enabled=true --set storageClass=kubevirt-hostpath-provisioner
+oc apply -f hostpathpv.yaml
+sleep 1
+oc apply -f secpatch.yaml
+EOF
+chmod +x /root/runme.sh
+
+tee /root/w.sh << EOF
+watch "kubectl get nodes;kubectl get pods -A;crictl images;crictl pods"
+EOF
+chmod +x /root/w.sh
+
+  SHELL
+
+end
