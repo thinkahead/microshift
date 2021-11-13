@@ -132,7 +132,7 @@ EOF
 chmod +x /root/runme.sh
 
 tee /root/w.sh << EOF
-watch "kubectl get nodes;kubectl get pods -A;crictl images;crictl pods"
+watch "kubectl get nodes;kubectl get pods -A;kubectl get pv,pvc -n default;crictl images;crictl pods"
 EOF
 chmod +x /root/w.sh
 
