@@ -21,7 +21,9 @@ while True:
     start_time = time.time()
     detections = net.Detect(img)
     for detection in detections:
-        if detection.ClassID==1:
+        #item=net.GetClassDesc(detection.ClassID)
+        #print(item)
+        if detection.ClassID==1: # person detected
             message='{"user":"jetsonnano","message":"%d: %s"}'%(start_time,str(detection).replace("\n",""))
             print(message)
             try:
@@ -35,6 +37,6 @@ while True:
                     ws.send(message)
                 except (BrokenPipeError,websocket._exceptions.WebSocketBadStatusException,websocket._exceptions.WebSocketConnectionClosedException) as e:
                     print("Cannot send to Web Socket, Ignored")
-            time.sleep(5)
+            #time.sleep(5)
             break
 
