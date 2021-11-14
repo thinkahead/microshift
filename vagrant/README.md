@@ -84,6 +84,8 @@ spec:
 kubectl create -f okd-web-console-install.yaml
 kubectl get pods,svc -o wide -n kube-system
 ```
+Add the port 30036 to the VirtualBox Microshift VM Settings->Network->Advanced->Port Forwarding
+http://localhost:30036
 
 ### Get the odo
 ```
@@ -104,7 +106,8 @@ oc get po,svc -A
 curl http://10.43.122.50:3000
 oc expose svc -n myproject nodejs-fcdemo3-ysig-app
 ```
-Expose port 80 on the VirtualBox microshift VM
+Add the port 80 to the VirtualBox MicroShift VM Settings->Network->Advanced->Port Forwarding
+
 Add the following to /etc/hosts on your Mac
 ```
 127.0.0.0 nodejs-fcdemo3-ysig-app-myproject.cluster.local
