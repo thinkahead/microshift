@@ -1,1 +1,2 @@
-vagrant halt;vagrant destroy -f
+#vagrant halt
+vagrant destroy -f

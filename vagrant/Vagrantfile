@@ -6,6 +6,10 @@ Vagrant.configure("2") do |config|
     # for parallelization
     v.cpus = 2
   end
+
+  config.vm.network :forwarded_port, guest: 30036, host: 30036, id: "console"
+  config.vm.network :forwarded_port, guest: 80, host: 80, id: "web"
+
   config.vm.hostname = 'microshift.example.com'
   config.vm.provision "shell", inline: <<-SHELL
 dnf -y module enable cri-o:1.19
@@ -80,6 +84,14 @@ mv -f linux-amd64/helm /usr/local/bin
 rm -rf linux-amd64/
 rm -f helm-v3.5.2-linux-amd64.tar.gz
 
+# Install odo
+OS="$(uname | tr '[:upper:]' '[:lower:]')"
+ARCH="$(uname -m | sed -e 's/x86_64/amd64/' -e 's/\(arm\)\(64\)\?.*/\1\2/' -e 's/aarch64$/arm64/')"
+curl -L https://developers.redhat.com/content-gateway/rest/mirror/pub/openshift-v4/clients/odo/latest/odo-$OS-$ARCH -o odo
+install odo /usr/local/bin/
+
+dnf install -y git
+
 # Create the yaml for creating the persistent volume for mysql
 tee /root/hostpathpv.yaml << EOF
 ---
@@ -136,6 +148,88 @@ watch "kubectl get nodes;kubectl get pods -A;kubectl get pv,pvc -n default;crict
 EOF
 chmod +x /root/w.sh
 
+tee /root/okd-web-console-install.yaml << EOF
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: console-deployment
+  namespace: kube-system
+  labels:
+    app: console
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: console
+  template:
+    metadata:
+      labels:
+        app: console
+    spec:
+      containers:
+        - name: console-app
+          image: quay.io/openshift/origin-console:4.2
+          env:
+            - name: BRIDGE_USER_AUTH
+              value: disabled # no authentication required
+            - name: BRIDGE_K8S_MODE
+              value: off-cluster
+            - name: BRIDGE_K8S_MODE_OFF_CLUSTER_ENDPOINT
+              value: https://kubernetes.default #master api
+            - name: BRIDGE_K8S_MODE_OFF_CLUSTER_SKIP_VERIFY_TLS
+              value: "true" # no tls enabled
+            - name: BRIDGE_K8S_AUTH
+              value: bearer-token
+            - name: BRIDGE_K8S_AUTH_BEARER_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: console-token-ppfc2 # console serviceaccount token
+                  key: token
+
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: console-np-service
+  namespace: kube-system
+spec:
+  selector:
+    app: console
+  type: NodePort # nodePort configuration
+  ports:
+    - name: http
+      port: 9000
+      targetPort: 9000
+      nodePort: 30036
+      protocol: TCP
+...
+EOF
+tee /root/okd-web-console-install.sh << EOF
+kubectl create serviceaccount console -n kube-system
+kubectl create clusterrolebinding console --clusterrole=cluster-admin --serviceaccount=kube-system:console -n kube-system
+sa=`kubectl get serviceaccount console --namespace=kube-system -o jsonpath='{.secrets[0].name}' -n kube-system`
+sed -i "s/name: .* # console serviceaccount token/name: \$sa # console serviceaccount token/" okd-web-console-install.yaml
+#oc get secret -n $secretnamefromabove -o yaml
+kubectl create -f okd-web-console-install.yaml
+EOF
+chmod +x /root/okd-web-console-install.sh
+
+tee /root/odosample.sh << EOF
+git clone https://github.com/odo-devfiles/nodejs-ex.git && cd nodejs-ex
+#git clone https://github.com/deep75/fcdemo3 && cd fcdemo3
+odo preference set ConsentTelemetry false
+odo project create myproject
+odo create nodejs
+odo push
+oc get po,svc -A
+#curl http://10.43.122.50:3000
+#oc expose svc -n myproject nodejs-fcdemo3-ysig-app
+#Expose port 80 on the VirtualBox microshift VM
+#Add the following to /etc/hosts on your Mac
+#127.0.0.0 nodejs-fcdemo3-ysig-app-myproject.cluster.local
+#http://nodejs-fcdemo3-ysig-app-myproject.cluster.local
+EOF
+chmod +x /root/odosample.sh
   SHELL
 
 end
