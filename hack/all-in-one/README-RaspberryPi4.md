@@ -237,7 +237,7 @@ https://people.centos.org/pgreco/CentOS-Userland-8-aarch64-RaspberryPI-Minimal-4
     systemctl start crio
     ```
 ## Errors
-    1. openshift-ingress router-default pod does not start - It is usually when you switch between wlan0 and eth0 or when the ipaddress gets changed. To fix this, run the "Cleanup" and restart MicroShift.
+1. openshift-ingress router-default pod does not start - It is usually when you switch between wlan0 and eth0 or when the ipaddress gets changed. To fix this, run the "Cleanup" steps and restart MicroShift.
 
 Downloading cni plugins
 =======================
