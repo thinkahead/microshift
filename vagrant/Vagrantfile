@@ -204,18 +204,21 @@ spec:
       protocol: TCP
 ...
 EOF
-tee /root/okd-web-console-install.sh << EOF
+
+cat << EOF > /root/okd-web-console-install.sh
 kubectl create serviceaccount console -n kube-system
 kubectl create clusterrolebinding console --clusterrole=cluster-admin --serviceaccount=kube-system:console -n kube-system
-sa=`kubectl get serviceaccount console --namespace=kube-system -o jsonpath='{.secrets[0].name}' -n kube-system`
-sed -i "s/name: .* # console serviceaccount token/name: \$sa # console serviceaccount token/" okd-web-console-install.yaml
-#oc get secret -n $secretnamefromabove -o yaml
+sa=\\$(kubectl get serviceaccount console --namespace=kube-system -o jsonpath='{.secrets[0].name}' -n kube-system)
+tokenname=\\$(kubectl get secret \\$sa -n kube-system -o jsonpath='{.metadata.ownerReferences[0].name}')
+sed -i "s/name: .* # console serviceaccount token/name: \\$tokenname # console serviceaccount token/" okd-web-console-install.yaml
+#oc get secret -n \\$sa -o yaml
 kubectl create -f okd-web-console-install.yaml
 EOF
 chmod +x /root/okd-web-console-install.sh
 
-tee /root/odosample.sh << EOF
-git clone https://github.com/odo-devfiles/nodejs-ex.git && cd nodejs-ex
+cat << EOF > /root/odosample.sh
+git clone https://github.com/phattp/nodejs-weather-app && cd nodejs-weather-app
+#git clone https://github.com/odo-devfiles/nodejs-ex.git && cd nodejs-ex
 #git clone https://github.com/deep75/fcdemo3 && cd fcdemo3
 odo preference set ConsentTelemetry false
 odo project create myproject
