@@ -60,7 +60,41 @@ Tested with SenseHat and USB camera
     mv -f oc /usr/local/bin
     cd ..;rm -rf tmp
     ```
-5. Running the Object detection, SenseHat sample
+5. Check the SenseHat
+    ```
+    root@raspberrypi:~/microshift/raspberry-pi/object-detection# i2cdetect -y 1
+         0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f
+    00:                         -- -- -- -- -- -- -- --
+    10: -- -- -- -- -- -- -- -- -- -- -- -- 1c -- -- --
+    20: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+    30: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+    40: -- -- -- -- -- -- UU -- -- -- -- -- -- -- -- --
+    50: -- -- -- -- -- -- -- -- -- -- -- -- 5c -- -- 5f
+    60: -- -- -- -- -- -- -- -- -- -- 6a -- -- -- -- --
+    70: -- -- -- -- -- -- -- --
+    ```
+
+    Create the sparkles.py and test the SenseHat's LED matrix
+    ```
+    cat << EOF > sparkles.py
+    from sense_hat import SenseHat
+    from random import randint
+    from time import sleep
+    sense = SenseHat()
+    while True:
+        x = randint(0, 7)
+        y = randint(0, 7)
+        r = randint(0, 255)
+        g = randint(0, 255)
+        b = randint(0, 255)
+        sense.set_pixel(x, y, r, g, b)
+        sleep(0.1)
+    EOF
+    ```
+    ```
+    python3 sparkles.py
+    ```
+6. Running the Object detection, SenseHat sample
     ```
     cd ~/microshift/raspberry-pi/object-detection
     oc apply -f object-detection.yaml
