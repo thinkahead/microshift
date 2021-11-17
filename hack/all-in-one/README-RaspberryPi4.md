@@ -1,9 +1,9 @@
-Raspbian 64 Debian GNU/Linux 11 (bullseye) on a Raspberry Pi 4
-==============================================================
+Raspberry Pi OS 64 Debian GNU/Linux 11 (bullseye) on a Raspberry Pi 4
+=====================================================================
 Tested with SenseHat and USB camera
 
 ## Steps to install and run MicroShift
-1. Download the Raspbian image zip and write to Microsdxc card
+1. Download the Raspberry Pi OS image zip and write to Microsdxc card
     1. Download the image from https://downloads.raspberrypi.org/raspios_arm64/images/raspios_arm64-2021-11-08/2021-10-30-raspios-bullseye-arm64.zip
     2. Write to Microsdxc card
     3. Have a Keyboard and Monitor connected to the Raspberry Pi
