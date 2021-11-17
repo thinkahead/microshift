@@ -1,5 +1,72 @@
+Raspbian 64 Debian GNU/Linux 11 (bullseye) on a Raspberry Pi 4
+==============================================================
+Tested with SenseHat and USB camera
+
+## Steps to install and run MicroShift
+1. Download the Raspbian image zip and write to Microsdxc card
+    1. Download the image from https://downloads.raspberrypi.org/raspios_arm64/images/raspios_arm64-2021-11-08/2021-10-30-raspios-bullseye-arm64.zip
+    2. Write to Microsdxc card
+    3. Insert Microsdxc into Raspberry Pi4 and poweron, reboot after the file system is resized
+    4. Enable ssh using sudo raspi-config -> Interfact Options -> SSH
+    5. Set the hostname raspberrypi.example.com
+
+2.  Update kernel parameters: append the following to /boot/cmdline.txt and reboot
+    ```
+     cgroup_enable=cpuset cgroup_memory=1 cgroup_enable=memory
+    ```
+
+3.  Clone the microshift repo so we can run the install.sh
+    ```
+    git clone https://github.com/thinkahead/microshift.git
+    ```
+
+    Hardcode the DISTRO=ubuntu and OS_VERSION=20.04
+    ```
+    diff --git a/install.sh b/install.sh
+    index 9e21c619..a0721e94 100755
+    --- a/install.sh
+    +++ b/install.sh
+    @@ -17,7 +17,8 @@ CONFIG_ENV_ONLY=${CONFIG_ENV_ONLY:=false}
+     # Function to get Linux distribution
+     get_distro() {
+         DISTRO=$(egrep '^(ID)=' /etc/os-release| sed 's/"//g' | cut -f2 -d"=")
+    -    if [[ $DISTRO != @(rhel|fedora|centos|ubuntu) ]]
+    +    DISTRO=ubuntu
+    +    if [[ $DISTRO != @(rhel|fedora|centos|ubuntu|debian) ]]
+         then
+           echo "This Linux distro is not supported by the install script"
+           exit 1
+    @@ -37,6 +38,7 @@ get_arch() {
+     # Function to get OS version
+     get_os_version() {
+         OS_VERSION=$(egrep '^(VERSION_ID)=' /etc/os-release | sed 's/"//g' | cut -f2 -d"=")
+    +    OS_VERSION=20.04
+     }
+    ```
+    Run the install
+    ```
+    hostnamectl set-hostname raspberrypi.example.com # the host needs a fqdn domain for MicroShift to work well
+    ./install.sh
+    export KUBECONFIG=/var/lib/microshift/resources/kubeadmin/kubeconfig
+    watch "kubectl get nodes;kubectl get pods -A;crictl images;crictl pods"
+    ```
+4. Install the oc client
+    ```
+    wget https://mirror.openshift.com/pub/openshift-v4/arm64/clients/ocp/candidate/openshift-client-linux.tar.gz
+    mkdir tmp;cd tmp
+    tar -zxvf ../openshift-client-linux.tar.gz
+    mv -f oc /usr/local/bin
+    cd ..;rm -rf tmp
+    ```
+5. Running the Object detection, SenseHat sample
+    ```
+    cd ~/microshift/raspberry-pi/object-detection
+    oc apply -f object-detection.yaml
+    ```
+
 Fedora 34 on a Raspberry Pi 4
 =============================
+Did not get Sensehat to work on this
 
 ## Instructions for running MicroShift
 MicroShift Nightly Fedora 34 aarch64 https://download.copr.fedorainfracloud.org/results/@redhat-et/microshift-nightly/fedora-34-aarch64/
@@ -91,6 +158,8 @@ Run the mysql and nginx samples as mentioned at https://github.com/thinkahead/mi
 
 CentOS 8 on a Raspberry Pi 4
 =============================
+Tested with SenseHat and USB camera
+
 ## Steps to install and run MicroShift
 1. Download the CentOS image and write to Microsdxc card
     1. Either use the image from https://people.centos.org/pgreco/CentOS-Userland-8-stream-aarch64-RaspberryPI-Minimal-4/ (I did not use this image) or
