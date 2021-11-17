@@ -6,9 +6,11 @@ Tested with SenseHat and USB camera
 1. Download the Raspbian image zip and write to Microsdxc card
     1. Download the image from https://downloads.raspberrypi.org/raspios_arm64/images/raspios_arm64-2021-11-08/2021-10-30-raspios-bullseye-arm64.zip
     2. Write to Microsdxc card
-    3. Insert Microsdxc into Raspberry Pi4 and poweron, reboot after the file system is resized
-    4. Enable ssh using sudo raspi-config -> Interfact Options -> SSH
-    5. Set the hostname raspberrypi.example.com
+    3. Have a Keyboard and Monitor connected to the Raspberry Pi
+    4. Insert Microsdxc into Raspberry Pi4 and poweron, reboot after the file system is resized
+    5. After first boot, you can change the pi password
+    6. Enable ssh using sudo raspi-config -> Interfact Options -> SSH
+    7. Set the hostname raspberrypi.example.com
 
 2.  Update kernel parameters: append the following to /boot/cmdline.txt and reboot
     ```
@@ -361,7 +363,7 @@ Installing sense_hat and RTIMULib on CentOS 8
 Samples to run on Raspberry Pi 4
 ================================
 - Image using pygame and SenseHat sent to Node Red https://github.com/thinkahead/microshift/blob/main/raspberry-pi/sensehat/README.md
-- Image using cv2, Object Detection using tflite and SenseHat temperature reading sent to Node Red  https://github.com/thinkahead/microshift/blob/main/raspberry-pi/object-detection/README.md
+- Image using cv2, Object Detection using tflite and SenseHat temperature reading sent to Node Red https://github.com/thinkahead/microshift/blob/main/raspberry-pi/object-detection/README.md
 
 Problems
 ========
@@ -394,5 +396,3 @@ I tried the armhfp (32 bit) image for CentOS 7 from http://isoredirect.centos.or
     wget https://files.pythonhosted.org/packages/13/cd/f30b6709e01cacd0f9e2882ce3c0633ea2862771a75f4a9d02a56db9ec9a/sense_hat-2.2.0-py2.py3-none-any.whl
     python pip-10.0.1-py2.py3-none-any.whl/pip install --no-index sense_hat-2.2.0-py2.py3-none-any.whl
     ```
-
-
