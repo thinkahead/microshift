@@ -89,11 +89,12 @@ OS="$(uname | tr '[:upper:]' '[:lower:]')"
 ARCH="$(uname -m | sed -e 's/x86_64/amd64/' -e 's/\(arm\)\(64\)\?.*/\1\2/' -e 's/aarch64$/arm64/')"
 curl -L https://developers.redhat.com/content-gateway/rest/mirror/pub/openshift-v4/clients/odo/latest/odo-$OS-$ARCH -o odo
 install odo /usr/local/bin/
+rm -f odo
 
 dnf install -y git
 
 # Create the yaml for creating the persistent volume for mysql
-tee /root/hostpathpv.yaml << EOF
+cat << EOF > /root/hostpathpv.yaml
 ---
 apiVersion: v1
 kind: PersistentVolume
@@ -109,7 +110,7 @@ spec:
     path: "/var/hpvolumes/mysql"
 EOF
 
-tee /root/secpatch.yaml << EOF
+cat << EOF > /root/secpatch.yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -129,7 +130,7 @@ spec:
 EOF
 
 # Run the runme.sh after the VM boots and microshift is started
-tee /root/runme.sh << EOF
+cat << EOF > /root/runme.sh
 chmod 600 /var/lib/microshift/resources/kubeadmin/kubeconfig
 rm -rf /var/hpvolumes/mysql
 mkdir /var/hpvolumes/mysql
@@ -143,12 +144,12 @@ oc apply -f secpatch.yaml
 EOF
 chmod +x /root/runme.sh
 
-tee /root/w.sh << EOF
+cat << EOF > /root/w.sh
 watch "kubectl get nodes;kubectl get pods -A;kubectl get pv,pvc -n default;crictl images;crictl pods"
 EOF
 chmod +x /root/w.sh
 
-tee /root/okd-web-console-install.yaml << EOF
+cat << EOF > /root/okd-web-console-install.yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -217,22 +218,31 @@ EOF
 chmod +x /root/okd-web-console-install.sh
 
 cat << EOF > /root/odosample.sh
-git clone https://github.com/phattp/nodejs-weather-app && cd nodejs-weather-app
+odo preference set ConsentTelemetry false -f
+odo project delete node-red -f -w
+rm -rf node-red
+git clone https://github.com/node-red/node-red.git && cd node-red
+#git clone https://github.com/phattp/nodejs-weather-app && cd nodejs-weather-app
 #git clone https://github.com/odo-devfiles/nodejs-ex.git && cd nodejs-ex
-#git clone https://github.com/deep75/fcdemo3 && cd fcdemo3
-odo preference set ConsentTelemetry false
-odo project create myproject
+odo project create node-red
 odo create nodejs
+odo url create test --port 1880
+odo url delete http-3000 -f
+sed -i 's/npm start/npm install \\&\\& npm run build \\&\\& npm start/' devfile.yaml
 odo push
-oc get po,svc -A
-#curl http://10.43.122.50:3000
-#oc expose svc -n myproject nodejs-fcdemo3-ysig-app
+odo url list
+#oc expose \\$(oc get svc -o name)
+oc get po,svc,routes
+oc logs \\$(oc get deployments -o name) -f
 #Expose port 80 on the VirtualBox microshift VM
 #Add the following to /etc/hosts on your Mac
-#127.0.0.0 nodejs-fcdemo3-ysig-app-myproject.cluster.local
-#http://nodejs-fcdemo3-ysig-app-myproject.cluster.local
+#127.0.0.0 xxx-myproject.cluster.local
+#http://xxx-myproject.cluster.local
 EOF
 chmod +x /root/odosample.sh
+export KUBECONFIG=/var/lib/microshift/resources/kubeadmin/kubeconfig
+oc patch daemonset/dns-default -n openshift-dns -p '{"spec": {"template": {"spec": {"containers": [{"name": "dns","resources": {"requests": {"cpu": "80m","memory": "90Mi"}}}]}}}}'
+
   SHELL
 
 end
