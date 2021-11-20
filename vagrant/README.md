@@ -6,10 +6,45 @@ vagrant up
 vagrant ssh
 sudo su -
 ./w.sh # watch the nodes,pods and images
-./runme.sh # Run the mysql with the storageClass=kubevirt-hostpath-provisioner
 ```
 
+## Errors
+if your "openshift-service-ca service-ca pod" or "openshift-dns dns-default pod" keep restarting, you may need to reboot the VM, or run the cleanup
+```
+systemctl stop microshift
+crictl rm --all --force
+crictl rmp --all --force
+sleep 5
+crictl rmi --all
+pkill -9 conmon
+pkill -9 pause
+rm -rf /var/lib/microshift
+systemctl stop crio
+rm -rf /var/lib/containers/*
+systemctl start crio
+```
+Reference
+- https://github.com/redhat-et/microshift/issues/270
+- https://github.com/redhat-et/microshift/issues/426
+
 ## Samples
+### Run the mysql with the storageClass=kubevirt-hostpath-provisioner
+```
+./runme.sh
+```
+
+### console
+```
+./okd-web-console-install.sh
+```
+
+### Node Red with odo
+```
+./odosample.sh
+```
+Wait for "Welcome to Node-RED" to appear in the logs
+
+## Samples manual install (old docs)
 Reference
 https://deep75.medium.com/aper%C3%A7u-de-microshift-une-impl%C3%A9mentation-l%C3%A9g%C3%A8re-dopenshift-e60b725849ce
 
