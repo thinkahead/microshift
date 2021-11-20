@@ -209,7 +209,7 @@ EOF
 cat << EOF > /root/okd-web-console-install.sh
 kubectl create serviceaccount console -n kube-system
 kubectl create clusterrolebinding console --clusterrole=cluster-admin --serviceaccount=kube-system:console -n kube-system
-sa=\\$(kubectl get serviceaccount console --namespace=kube-system -o jsonpath='{.secrets[0].name}' -n kube-system)
+sa=\\$(kubectl get serviceaccount console --namespace=kube-system -o jsonpath='{.imagePullSecrets[0].name}' -n kube-system)
 tokenname=\\$(kubectl get secret \\$sa -n kube-system -o jsonpath='{.metadata.ownerReferences[0].name}')
 sed -i "s/name: .* # console serviceaccount token/name: \\$tokenname # console serviceaccount token/" okd-web-console-install.yaml
 #oc get secret -n \\$sa -o yaml
