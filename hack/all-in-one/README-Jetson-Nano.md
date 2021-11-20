@@ -1063,3 +1063,4 @@ https://github.com/redhat-et/microshift/issues/249
 ## References
 - Microshift end to end provisioning demo https://www.youtube.com/watch?v=QOiB8NExtA4
 - NVidia GPU Operator on x86-64 with microshift https://gist.github.com/rootfs/2363394bc4f1bd14cf8208ed2ea82038#install-nvidia-gpu-operator
+- Comparison for Jetson Nano, TX2, Xavier NX and AGX https://www.fastcompression.com/blog/jetson-benchmark-comparison.htm
