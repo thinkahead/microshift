@@ -12,7 +12,8 @@ Vagrant.configure("2") do |config|
 
   config.vm.hostname = 'microshift.example.com'
   config.vm.provision "shell", inline: <<-SHELL
-dnf -y module enable cri-o:1.19
+dnf module list cri-o
+dnf -y module enable cri-o:1.22
 dnf -y install cri-o
 curl https://copr.fedorainfracloud.org/coprs/g/redhat-et/microshift-nightly/repo/fedora-34/group_redhat-et-microshift-nightly-fedora-34.repo -o /etc/yum.repos.d/microshift-nightly-fedora34.repo 2>/dev/null
 
@@ -115,7 +116,6 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: mysql
-  namespace: default
 spec:
   template:
     spec:
@@ -129,20 +129,20 @@ spec:
           privileged: true
 EOF
 
-# Run the runme.sh after the VM boots and microshift is started
-cat << EOF > /root/runme.sh
+# Run the sql-sample.sh after the VM boots and microshift is started
+cat << EOF > /root/sql-sample.sh
 chmod 600 /var/lib/microshift/resources/kubeadmin/kubeconfig
 rm -rf /var/hpvolumes/mysql
 mkdir /var/hpvolumes/mysql
 #chown systemd-oom:systemd-oom /var/hpvolumes/mysql
 oc delete -f hostpathpv.yaml
 helm repo add stable https://charts.helm.sh/stable
-helm install mysql stable/mysql --set persistence.enabled=true --set storageClass=kubevirt-hostpath-provisioner
+helm install mysql stable/mysql --set mysqlRootPassword=secretpassword,mysqlUser=my-user,mysqlPassword=my-password,mysqlDatabase=my-database --set persistence.enabled=true --set storageClass=kubevirt-hostpath-provisioner
 oc apply -f hostpathpv.yaml
 sleep 1
 oc apply -f secpatch.yaml
 EOF
-chmod +x /root/runme.sh
+chmod +x /root/sql-sample.sh
 
 cat << EOF > /root/w.sh
 watch "kubectl get nodes;kubectl get pods -A;kubectl get pv,pvc -n default;crictl images;crictl pods"
@@ -214,10 +214,12 @@ tokenname=\\$(kubectl get secret \\$sa -n kube-system -o jsonpath='{.metadata.ow
 sed -i "s/name: .* # console serviceaccount token/name: \\$tokenname # console serviceaccount token/" okd-web-console-install.yaml
 #oc get secret -n \\$sa -o yaml
 kubectl create -f okd-web-console-install.yaml
+sleep 2
+oc expose svc console-np-service -n kube-system
 EOF
 chmod +x /root/okd-web-console-install.sh
 
-cat << EOF > /root/odosample.sh
+cat << EOF > /root/odo-sample.sh
 odo preference set ConsentTelemetry false -f
 odo project delete node-red -f -w
 rm -rf node-red
@@ -239,10 +241,10 @@ oc logs \\$(oc get deployments -o name) -f
 #127.0.0.0 xxx-myproject.cluster.local
 #http://xxx-myproject.cluster.local
 EOF
-chmod +x /root/odosample.sh
-export KUBECONFIG=/var/lib/microshift/resources/kubeadmin/kubeconfig
-oc patch daemonset/dns-default -n openshift-dns -p '{"spec": {"template": {"spec": {"containers": [{"name": "dns","resources": {"requests": {"cpu": "80m","memory": "90Mi"}}}]}}}}'
-
+chmod +x /root/odo-sample.sh
+# This patch may be required
+#export KUBECONFIG=/var/lib/microshift/resources/kubeadmin/kubeconfig
+#oc patch daemonset/dns-default -n openshift-dns -p '{"spec": {"template": {"spec": {"containers": [{"name": "dns","resources": {"requests": {"cpu": "80m","memory": "90Mi"}}}]}}}}'
   SHELL
 
 end
