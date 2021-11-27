@@ -19,7 +19,9 @@ spec:
         command: ["/bin/bash", "-c", "python3 my-detection.py;sleep infinity"]
         env:
           - name: WebSocketURL
-            value: "wss://nodered2021.mybluemix.net/ws/chat"
+            value: "wss://mynodered.mybluemix.net/ws/chat"
+          - name: ImageUploadURL
+            value: "http://mynodered.mybluemix.net/upload"
           - name: VideoSource
             value: "/dev/video0"
         securityContext:
