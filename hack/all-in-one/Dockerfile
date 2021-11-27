@@ -3,44 +3,17 @@ ARG IMAGE_NAME=registry.access.redhat.com/ubi8/ubi-init:8.4
 
 ARG ARCH
 
-FROM registry.access.redhat.com/ubi8/go-toolset as builder
-
-ARG FROM_SOURCE
-
-ENV GOPATH=/opt/app-root GOCACHE=/mnt/cache GO111MODULE=on
-
-WORKDIR $GOPATH/src/github.com/redhat-et/microshift
-
-COPY . .
-
-USER root
-
-# If from source, expect microshift binary in current directory
-RUN if [ "$FROM_SOURCE" == "true" ]; then \
-        mv microshift /usr/local/bin/microshift; \
-    else \
-        export VERSION=$(curl -s https://api.github.com/repos/redhat-et/microshift/releases | grep tag_name | head -n 1 | cut -d '"' -f 4) && \
-        curl -LO https://github.com/redhat-et/microshift/releases/download/$VERSION/microshift-linux-${ARCH} && \
-        mv microshift-linux-${ARCH} /usr/local/bin/microshift; \
-     fi
-
-RUN chmod 755 /usr/local/bin/microshift
-
 FROM ${IMAGE_NAME}
 
 ARG HOST=rhel8
 
-#RUN export VERSION=$(curl -s https://api.github.com/repos/redhat-et/microshift/releases | grep tag_name | head -n 1 | cut -d '"' -f 4) && \
-#    export ARCH=$(uname -m |sed -e "s/x86_64/amd64/" |sed -e "s/aarch64/arm64/") && \
-#    curl -LO https://github.com/redhat-et/microshift/releases/download/$VERSION/microshift-linux-${ARCH} && \
-#    mv microshift-linux-${ARCH} /usr/local/bin/microshift && chmod 755 /usr/local/bin/microshift
 COPY microshift /usr/local/bin/microshift
 RUN chmod +x /usr/local/bin/microshift
 COPY unit /usr/lib/systemd/system/microshift.service
 COPY kubelet-cgroups.conf /etc/systemd/system.conf.d/kubelet-cgroups.conf
 COPY crio-bridge.conf /etc/cni/net.d/100-crio-bridge.conf
 
-RUN export VERSION=1.20 && \
+RUN export VERSION=1.22 && \
     export OS=CentOS_8_Stream && \
     curl -L -o /etc/yum.repos.d/devel:kubic:libcontainers:stable.repo https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/$OS/devel:kubic:libcontainers:stable.repo && \
     curl -L -o /etc/yum.repos.d/devel:kubic:libcontainers:stable:cri-o:$VERSION.repo https://download.opensuse.org/repositories/devel:kubic:libcontainers:stable:cri-o:$VERSION/$OS/devel:kubic:libcontainers:stable:cri-o:$VERSION.repo 
