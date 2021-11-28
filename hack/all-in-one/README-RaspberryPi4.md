@@ -331,9 +331,9 @@ https://people.centos.org/pgreco/CentOS-Userland-8-aarch64-RaspberryPI-Minimal-4
 9. Cleanup MicroShift/cri-o images and pods
     ```
     systemctl stop microshift
+    until crictl rmp --all --force 1>/dev/null; do sleep 1; done
     crictl rm --all --force
-    crictl rmp --all --force
-    crictl rmi --all
+    crictl rmi --all --prune
     pkill -9 conmon
     pkill -9 pause
     rm -rf /var/lib/microshift
