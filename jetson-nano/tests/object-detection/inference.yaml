@@ -42,47 +42,47 @@ spec:
         volumeMounts:
           - name: dev-video0
             mountPath: /dev/video0
-          - name: data
-            mountPath: /jetson-inference/data
-          - name: classification-data
-            mountPath: /jetson-inference/python/training/classification/data
-          - name: classification-models
-            mountPath: /jetson-inference/python/training/classification/models
-          - name: detection-data
-            mountPath: /jetson-inference/python/training/detection/ssd/data
-          - name: detection-models
-            mountPath: /jetson-inference/python/training/detection/ssd/models
-          - name: x11-unix
-            mountPath: /tmp/.X11-unix
-          - name: argus-socket
-            mountPath: /tmp/argus_socket
-          - name: enctune-conf
-            mountPath: /etc/enctune.conf
+          #- name: data
+          #  mountPath: /jetson-inference/data
+          #- name: classification-data
+          #  mountPath: /jetson-inference/python/training/classification/data
+          #- name: classification-models
+          #  mountPath: /jetson-inference/python/training/classification/models
+          #- name: detection-data
+          #  mountPath: /jetson-inference/python/training/detection/ssd/data
+          #- name: detection-models
+          #  mountPath: /jetson-inference/python/training/detection/ssd/models
+          #- name: x11-unix
+          #  mountPath: /tmp/.X11-unix
+          #- name: argus-socket
+          #  mountPath: /tmp/argus_socket
+          #- name: enctune-conf
+          #  mountPath: /etc/enctune.conf
       volumes:
         - name: dev-video0
           hostPath:
             path: /dev/video0
-        - name: data
-          hostPath:
-            path: /home/dlinano/jetson-inference/data
-        - name: classification-data
-          hostPath:
-            path: /home/dlinano/jetson-inference/python/training/classification/data
-        - name: classification-models
-          hostPath:
-            path: /home/dlinano/jetson-inference/python/training/classification/models
-        - name: detection-data
-          hostPath:
-            path: /home/dlinano/jetson-inference/python/training/detection/ssd/data
-        - name: detection-models
-          hostPath:
-            path: /home/dlinano/jetson-inference/python/training/detection/ssd/models
-        - name: x11-unix
-          hostPath:
-            path: /tmp/.X11-unix/
-        - name: argus-socket
-          hostPath:
-            path: /tmp/argus_socket
-        - name: enctune-conf
-          hostPath:
-            path: /etc/enctune.conf
+        #- name: data
+        #  hostPath:
+        #    path: /home/dlinano/jetson-inference/data
+        #- name: classification-data
+        #  hostPath:
+        #    path: /home/dlinano/jetson-inference/python/training/classification/data
+        #- name: classification-models
+        #  hostPath:
+        #    path: /home/dlinano/jetson-inference/python/training/classification/models
+        #- name: detection-data
+        #  hostPath:
+        #    path: /home/dlinano/jetson-inference/python/training/detection/ssd/data
+        #- name: detection-models
+        #  hostPath:
+        #    path: /home/dlinano/jetson-inference/python/training/detection/ssd/models
+        #- name: x11-unix
+        #  hostPath:
+        #    path: /tmp/.X11-unix/
+        #- name: argus-socket
+        #  hostPath:
+        #    path: /tmp/argus_socket
+        #- name: enctune-conf
+        #  hostPath:
+        #    path: /etc/enctune.conf
