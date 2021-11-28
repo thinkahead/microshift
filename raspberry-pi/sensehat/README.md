@@ -42,7 +42,7 @@ kubectl delete -f sensehat.yaml
 14. In Manage Palette, install the node-red-contrib-image-tools, node-red-contrib-image-output, node-red-node-base64, node-red-node-random and node-red-contrib-aedes
 15. Import required Chat and Image Viewer flows as below.
 
-### Picture (Upload and view the imageo) on Node Red
+### Picture on Node Red
 Connect to your own instance of NodeRed on IBM Cloud http://mynodered.mybluemix.net/simple
 ```
 [
