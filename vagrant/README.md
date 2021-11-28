@@ -2,7 +2,7 @@
 
 ## Run MicroShift in Fedora 35 using Vagrant
 ```
-vagrant up
+VAGRANT_VAGRANTFILE=Vagrantfile vagrant up
 vagrant ssh
 sudo su -
 ./w.sh # watch the nodes,pods and images
@@ -37,12 +37,17 @@ Reference
 ```
 ./okd-web-console-install.sh
 ```
+Add the 127.0.0.1 console-np-service-kube-system.cluster.local to /etc/hosts on your Mac
+http://console-np-service-kube-system.cluster.local
 
 ### Node Red with odo
 ```
 ./odosample.sh
 ```
 Wait for "Welcome to Node-RED" to appear in the logs
+
+Add the "127.0.0.1 test-app-node-red.cluster.local" to /etc/hosts on your Mac
+http://test-app-node-red.cluster.local
 
 ## Samples manual install (old docs)
 Reference
