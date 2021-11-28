@@ -12,6 +12,10 @@ spec:
       labels:
         app: inference
     spec:
+      hostAliases:
+      - hostnames:
+        - test-app-node-red.cluster.local
+        ip: 192.168.1.237
       containers:
       - name: inference
         image: docker.io/karve/jetson-inference:r32.6.1
@@ -19,9 +23,9 @@ spec:
         command: ["/bin/bash", "-c", "python3 my-detection.py;sleep infinity"]
         env:
           - name: WebSocketURL
-            value: "wss://mynodered.mybluemix.net/ws/chat"
+            value: "ws://test-app-node-red.cluster.local/ws/chat"
           - name: ImageUploadURL
-            value: "http://mynodered.mybluemix.net/upload"
+            value: "http://test-app-node-red.cluster.local/upload"
           - name: VideoSource
             value: "/dev/video0"
         securityContext:
