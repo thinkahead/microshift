@@ -1,0 +1,16 @@
+ARG IMAGE_NAME=registry.access.redhat.com/ubi8/ubi-init:8.4
+
+ARG ARCH
+
+FROM ${IMAGE_NAME}
+
+COPY microshift /usr/bin/microshift
+RUN chmod +x /usr/bin/microshift
+
+RUN dnf install -y libnetfilter_conntrack libnfnetlink && \
+      rpm -v -i --force https://archives.fedoraproject.org/pub/archive/fedora/linux/releases/28/Everything/aarch64/os/Packages/i/iptables-libs-1.6.2-2.fc28.aarch64.rpm \
+                   https://archives.fedoraproject.org/pub/archive/fedora/linux/releases/28/Everything/aarch64/os/Packages/i/iptables-1.6.2-2.fc28.aarch64.rpm
+
+ENTRYPOINT ["/usr/bin/microshift"]
+CMD ["run"]
+
