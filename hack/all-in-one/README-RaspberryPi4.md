@@ -12,7 +12,7 @@ Tested with SenseHat and USB camera
     6. Enable ssh using sudo raspi-config -> Interfact Options -> SSH
     7. Set the hostname raspberrypi.example.com
 
-2.  Update kernel parameters: append the following to /boot/cmdline.txt and reboot
+2.  Update kernel parameters: append the following at the end of the line (do not add a new line) in /boot/cmdline.txt and reboot
     ```
      cgroup_enable=cpuset cgroup_memory=1 cgroup_enable=memory
     ```
