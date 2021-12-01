@@ -1,5 +1,5 @@
 # nginx sample
-Create the data in /var/hpvolumes/nginx/data1
+Create the data in /var/hpvolumes/nginx/data1. The data1 is because we use the subPath in the volumeMounts in the nginx.yaml
 ```
 mkdir -p /var/hpvolumes/nginx/data1/
 cp index.html /var/hpvolumes/nginx/data1/.
@@ -26,9 +26,10 @@ Then  delete the pvc
 oc delete hostpathpvc.yaml
 ```
 
-Now if you want to reuse the pv
+Now if you want to reuse the pv, you need to delete the claimRef from the pv
 ```
 kubectl edit pv hostpath-provisioner
 # Delete rthe complete claimRef field and save
-oc apply -f hostpathpvc.yaml
+oc apply -f hostpathpvc.yaml # create a new claim, it will work now
+oc apply -f nginx.yaml # create the nginx again
 ```
