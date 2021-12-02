@@ -1,0 +1,71 @@
+apiVersion: template.openshift.io/v1
+kind: Template
+metadata:
+  name: nginx-template
+  annotations:
+    description: "run a simple nginx server"
+    tags: "webserver,nginx"
+objects:
+- apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    name: ${NAME}
+  spec:
+    replicas: 1
+    selector:
+      matchLabels:
+        app: ${NAME}
+    template:
+      metadata:
+        labels:
+          app: ${NAME}
+      spec:
+        containers:
+        - image: docker.io/nginxinc/nginx-unprivileged:${NGINX_VERSION}
+          imagePullPolicy: Always
+          name: nginx
+          ports:
+          - containerPort: 8080
+            protocol: TCP
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        securityContext: {}
+        terminationGracePeriodSeconds: 30
+- apiVersion: v1
+  kind: Service
+  metadata:
+    labels:
+      app: ${NAME}
+    name: ${NAME}
+  spec:
+    ports:
+    - port: 8080
+      protocol: TCP
+      targetPort: 8080
+      name: http
+    selector:
+      app: ${NAME}
+- apiVersion: v1
+  kind: Route
+  metadata:
+    labels:
+      app: ${NAME}
+    name: ${NAME}
+  spec:
+    port:
+      targetPort: 8080
+    to:
+      kind: Service
+      name: ${NAME}
+    weight: 100
+    wildcardPolicy: None
+parameters:
+- name: NAME
+  description: The name for the deployment, service and route
+  value: nginx
+- name: NGINX_VERSION
+  description: The version (tag) of the used nginx image
+  value: alpine
+
