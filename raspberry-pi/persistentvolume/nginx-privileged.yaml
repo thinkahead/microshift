@@ -6,26 +6,16 @@ spec:
   selector:
     matchLabels:
       app: nginx
-  replicas: 1 # tells deployment to run 2 pods matching the template
+  replicas: 2 # tells deployment to run 2 pods matching the template
   template:
     metadata:
       labels:
         app: nginx
     spec:
-      securityContext:
-        fsGroup: 1001
       volumes:
       - name: nginx-data
         persistentVolumeClaim:
           claimName: hostpath-provisioner-claim
-      initContainers:
-      - name: volume-permissions
-        image: busybox
-        command: ['sh', '-c', 'chgrp -R 1001 /usr/share/nginx/html;chmod -R g+rwx /usr/share/nginx/html']
-        volumeMounts:
-        - mountPath: /usr/share/nginx/html
-          name: nginx-data
-          subPath: data1
       containers:
       - name: nginx
         image: docker.io/nginxinc/nginx-unprivileged:alpine
@@ -35,8 +25,8 @@ spec:
         - name: nginx-data
           mountPath: /usr/share/nginx/html
           subPath: data1
-        #securityContext:
-        #  privileged: true
+        securityContext:
+          privileged: true
         resources:
           requests:
             memory: 128M
