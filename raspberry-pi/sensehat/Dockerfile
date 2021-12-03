@@ -16,7 +16,7 @@ RUN dpkg -i librtimulib-dev_7.2.1-4_armhf.deb librtimulib-utils_7.2.1-4_armhf.de
 
 RUN rm -f /tmp/*.deb && apt-get clean
 
-ADD test.py /test.py
+ADD temperature.py /temperature.py
 ADD testcam.py /testcam.py
 ADD sparkles.py /sparkles.py
 ADD sendimages1.py /sendimages1.py

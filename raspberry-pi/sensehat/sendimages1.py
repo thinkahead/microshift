@@ -13,7 +13,7 @@ while True: # do forever
     image= cam.get_image()
     pygame.image.save_extended(image,'101.jpg')
     cam.stop()
-    os.system('curl -F "myFile=@101.jpg" -F "submit=Submit" http://nodered2021.mybluemix.net/upload')
+    os.system('curl -F "myFile=@101.jpg" -F "submit=Submit" http://mynodered.mybluemix.net/upload')
     print('waiting %d seconds...' % waittime)
     time.sleep(waittime)
 

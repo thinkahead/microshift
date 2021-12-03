@@ -11,9 +11,9 @@ while True: # do forever
     #os.system('fswebcam --png '+pq+' --subtitle person --save 101.png -r 640x480 -v -S 10 --set brightness=100%')
 
     #os.system('fswebcam --png '+pq+' --subtitle person --save 101.png -r 640x480')
-    #os.system('curl -F "myFile=@101.png" -F "submit=Submit" http://nodered2021.mybluemix.net/upload')
+    #os.system('curl -F "myFile=@101.png" -F "submit=Submit" http://mynodered.mybluemix.net/upload')
 
-    os.system('fswebcam --png '+pq+' --subtitle person --save 101.png -r 640x480 && curl -F myFile=@101.png -F submit=Submit http://nodered2021.mybluemix.net/upload')
+    os.system('fswebcam --png '+pq+' --subtitle person --save 101.png -r 640x480 && curl -F myFile=@101.png -F submit=Submit http://mynodered.mybluemix.net/upload')
     print('waiting %d seconds...' % waittime)
     time.sleep(waittime)
 

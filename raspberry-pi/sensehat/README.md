@@ -2,7 +2,7 @@
 
 Testing the programs separately. The Camera works with pygame on Ubuntu, but on CentOS 8, I was not able to install the dependencies for pygame. Therefore, run the testcam.py in podman/docker container.
 ```
-python test.py
+python temperature.py
 python testcam.py
 python sparkles.py
 ```
