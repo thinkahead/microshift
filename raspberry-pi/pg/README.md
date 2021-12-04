@@ -155,3 +155,8 @@ postgresdb=# SELECT * FROM cities;
 (2 rows)
 ```
 
+Finally, we delete the deployment and project
+```
+oc delete -f .
+oc delete project pg
+```
