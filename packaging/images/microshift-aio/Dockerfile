@@ -1,6 +1,6 @@
 ARG IMAGE_NAME=registry.access.redhat.com/ubi8/ubi-init:8.4
 
-FROM registry.access.redhat.com/ubi8/go-toolset as builder
+FROM registry.access.redhat.com/ubi8/go-toolset:1.16.7-5 as builder
 
 ARG FROM_SOURCE=false
 

@@ -1,5 +1,5 @@
 # BUILD STAGE
-FROM registry.access.redhat.com/ubi8/go-toolset as builder
+FROM registry.access.redhat.com/ubi8/go-toolset:1.16.7-5 as builder
 
 ARG ARCH=amd64
 ARG MAKE_TARGET=cross-build-linux-$ARCH
