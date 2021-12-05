@@ -30,4 +30,5 @@ For more information about executing inferences with TensorFlow Lite, read
 References
 - Tensorflow Lite examples https://github.com/tensorflow/examples/tree/master/lite/examples/object_detection/raspberry_pi
 - Latest tflite runtimes https://google-coral.github.io/py-repo/tflite-runtime/
+- Latest numpy https://pypi.org/project/numpy/#files
 - Raspberryi Pi 4 - 64 Debian image https://hub.docker.com/r/balenalib/raspberrypi4-64-debian
