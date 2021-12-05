@@ -21,9 +21,9 @@ spec:
           privileged: true
         env:
           - name: WebSocketURL
-            value: "wss://nodered2021.mybluemix.net/ws/chat"
+            value: "wss://mynodered.mybluemix.net/ws/chat"
           - name: ImageUploadURL
-            value: "http://nodered2021.mybluemix.net/upload"
+            value: "http://mynodered.mybluemix.net/upload"
         ports:
         - containerPort: 8080
         # resource required for hpa
@@ -36,5 +36,5 @@ spec:
             cpu: 1000m
       hostAliases:
       - hostnames:
-        - nodered2021.mybluemix.net
+        - mynodered.mybluemix.net
         ip: 169.46.89.149

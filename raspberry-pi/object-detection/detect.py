@@ -10,8 +10,8 @@ import os
 from sense_hat import SenseHat
 import websocket
 
-imageUploadURL=os.getenv("ImageUploadURL",default="http://nodered2021.mybluemix.net/upload")
-webSocketURL=os.getenv("WebSocketURL",default="wss://nodered2021.mybluemix.net/ws/chat")
+imageUploadURL=os.getenv("ImageUploadURL",default="http://mynodered.mybluemix.net/upload")
+webSocketURL=os.getenv("WebSocketURL",default="wss://mynodered.mybluemix.net/ws/chat")
 
 ws = websocket.WebSocket()
 try:
