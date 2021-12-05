@@ -46,6 +46,7 @@ RUN microdnf install -y \
     && microdnf clean all
 #COPY --from=builder /opt/app-root/src/github.com/redhat-et/microshift/_output/bin/linux_$ARCH/microshift /usr/bin/microshift
 COPY --from=builder /opt/app-root/src/github.com/redhat-et/microshift/microshift /usr/bin/microshift
+RUN chmod 755 /usr/bin/microshift
 
 ENTRYPOINT ["/usr/bin/microshift"]
 CMD ["run"]
