@@ -21,6 +21,8 @@ spec:
       initContainers:
       - name: volume-permissions
         image: busybox
+        #securityContext:
+        #  privileged: true
         command: ['sh', '-c', 'chgrp -R 1001 /usr/share/nginx/html;chmod -R g+rwx /usr/share/nginx/html']
         volumeMounts:
         - mountPath: /usr/share/nginx/html
@@ -35,6 +37,15 @@ spec:
         - name: nginx-data
           mountPath: /usr/share/nginx/html
           subPath: data1
+        #securityContext:
+        #  capabilities:
+        #    drop:
+        #    - KILL
+        #    - MKNOD
+        #    - SETGID
+        #    - SETUID
+        #  runAsUser: 1001
+        #  runAsGroup: 1001
         #securityContext:
         #  privileged: true
         resources:

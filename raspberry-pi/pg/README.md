@@ -89,7 +89,8 @@ LOG:  database system is ready to accept connections
 ```
 Install the postgresql client
 ```
-apt-get install postgresql-client
+yum install -y postgresql # CentOS
+apt-get install postgresql-client # Debian, Ubuntu
 ```
 
 Connect to the database

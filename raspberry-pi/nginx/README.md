@@ -1,6 +1,7 @@
 # nginx sample with template
-First we will run a nginx sample using a template
+First we will run a nginx sample using a template. This uses the image docker.io/nginxinc/nginx-unprivileged:alpine
 ```
+oc project default # If you use a different namespace xxxx, you will need to change the /etc/hosts to match the nginx-xxxx.cluster.local accordingly
 #oc process -f nginx-template-deploymentconfig.yml | oc apply -f - # deploymentconfig does not work in microshift
 oc process -f nginx-template-deployment-8080.yml | oc apply -f - # deployment works in microshift
 oc get templates
@@ -18,7 +19,7 @@ curl nginx-default.cluster.local
 
 To delete
 ```
-oc process -f nginx-template-deployment.yml | oc delete -f -
+oc process -f nginx-template-deployment-8080.yml | oc delete -f -
 ```
 
 Other commands
@@ -42,7 +43,10 @@ cp 50x.html /var/hpvolumes/nginx/data1/.
 ```
 This will create the pv, pvc, deployment and service. There will be two replicas sharing the same persistent volume.
 ```
-oc apply -f .
+oc apply -f hostpathpvc.yaml
+oc apply -f hostpathpv.yaml
+oc apply -f nginx-privileged.yaml
+oc apply -f nginx.yaml
 ```
 Give a request as follows:
 ```
