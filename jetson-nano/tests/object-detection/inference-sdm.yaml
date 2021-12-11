@@ -1,0 +1,94 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: inference-deployment
+spec:
+  selector:
+    matchLabels:
+      app: inference
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: inference
+    spec:
+      hostAliases:
+      - hostnames:
+        - test-app-node-red.cluster.local
+        ip: 192.168.1.237
+      containers:
+      - name: inference
+        image: docker.io/karve/jetson-inference:r32.6.1
+        imagePullPolicy: IfNotPresent
+        command: ["/bin/bash", "-c", "python3 my-detection.py;sleep infinity"]
+        env:
+          - name: WebSocketURL
+            value: "ws://test-app-node-red.cluster.local/ws/chat"
+          - name: ImageUploadURL
+            value: "http://test-app-node-red.cluster.local/upload"
+          - name: VideoSource
+            value: "/dev/video0"
+        securityContext:
+          #privileged: true
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop: ["ALL"]
+        #ports:
+        #- containerPort: 8888
+        # resource required for hpa
+        resources:
+          requests:
+            smarter-devices/video0: 1
+            memory: 128M
+            cpu: 125m
+          limits:
+            smarter-devices/video0: 1
+            memory: 2048M
+            cpu: 1000m
+        volumeMounts:
+          - name: dev-video0
+            mountPath: /dev/video0
+          #- name: data
+          #  mountPath: /jetson-inference/data
+          #- name: classification-data
+          #  mountPath: /jetson-inference/python/training/classification/data
+          #- name: classification-models
+          #  mountPath: /jetson-inference/python/training/classification/models
+          #- name: detection-data
+          #  mountPath: /jetson-inference/python/training/detection/ssd/data
+          #- name: detection-models
+          #  mountPath: /jetson-inference/python/training/detection/ssd/models
+          #- name: x11-unix
+          #  mountPath: /tmp/.X11-unix
+          #- name: argus-socket
+          #  mountPath: /tmp/argus_socket
+          #- name: enctune-conf
+          #  mountPath: /etc/enctune.conf
+      volumes:
+        - name: dev-video0
+          hostPath:
+            path: /dev/video0
+        #- name: data
+        #  hostPath:
+        #    path: /home/dlinano/jetson-inference/data
+        #- name: classification-data
+        #  hostPath:
+        #    path: /home/dlinano/jetson-inference/python/training/classification/data
+        #- name: classification-models
+        #  hostPath:
+        #    path: /home/dlinano/jetson-inference/python/training/classification/models
+        #- name: detection-data
+        #  hostPath:
+        #    path: /home/dlinano/jetson-inference/python/training/detection/ssd/data
+        #- name: detection-models
+        #  hostPath:
+        #    path: /home/dlinano/jetson-inference/python/training/detection/ssd/models
+        #- name: x11-unix
+        #  hostPath:
+        #    path: /tmp/.X11-unix/
+        #- name: argus-socket
+        #  hostPath:
+        #    path: /tmp/argus_socket
+        #- name: enctune-conf
+        #  hostPath:
+        #    path: /etc/enctune.conf
