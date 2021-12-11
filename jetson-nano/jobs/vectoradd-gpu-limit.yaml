@@ -1,0 +1,21 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: vectoradd-job
+spec:
+  parallelism: 5
+  completions: 5
+  activeDeadlineSeconds: 1800 
+  backoffLimit: 6   
+  template:
+    metadata:
+      labels:
+        app: vectoradd
+    spec:
+      containers:
+      - name: vectoradd
+        image: docker.io/karve/vector-add-sample:arm64-jetsonnano
+        resources:
+          limits:
+            nvidia.com/gpu: 1
+      restartPolicy: OnFailure

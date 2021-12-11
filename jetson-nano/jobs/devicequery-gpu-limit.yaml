@@ -1,0 +1,22 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: devicequery-job
+spec:
+  parallelism: 5
+  completions: 5
+  activeDeadlineSeconds: 1800
+  backoffLimit: 6
+  template:
+    metadata:
+      labels:
+        app: devicequery
+    spec:
+      containers:
+      - name: devicequery
+        image: docker.io/karve/devicequery:arm64-jetsonnano
+        resources:
+          limits:
+            nvidia.com/gpu: 1
+      restartPolicy: OnFailure
+
