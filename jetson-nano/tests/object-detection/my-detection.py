@@ -25,7 +25,7 @@ while True:
         #print(item)
         if detection.ClassID==1: # person detected
             message='{"user":"jetsonnano","message":"%d: %s"}'%(start_time,str(detection).replace("\n",""))
-            print(message)
+            #print(message)
             try:
                 ws.send(message)
                 jetson.utils.cudaDeviceSynchronize()

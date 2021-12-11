@@ -56,6 +56,17 @@ while True:
         #print(item,top,left,bottom,right)
         cv2.rectangle(img, (left, top), (right, bottom), (0, 0, 0), 2)
         cv2.putText(img, item, (left,top), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0,255,0), 1)
+        if ID==1: # person detected
+            message='{"user":"jetsonnano","message":"%d: %s"}'%(timeStamp,str(detect).replace("\n",""))
+            #print(message)
+            try:
+                ws.send(message)
+            except (BrokenPipeError,websocket._exceptions.WebSocketConnectionClosedException) as e:
+                try:
+                    ws.connect(webSocketURL)
+                    ws.send(message)
+                except (BrokenPipeError,websocket._exceptions.WebSocketBadStatusException,websocket._exceptions.WebSocketConnectionClosedException) as e:
+                    print("Cannot send to Web Socket, Ignored")
 
     #display.RenderOnce(img,width,height)
     dt=time.time()-timeStamp
@@ -68,6 +79,6 @@ while True:
     #cv2.moveWindow('detCam',0,0)
     cv2.imwrite("101.jpg", img)
     os.system('curl -F myFile=@101.jpg -F submit=Submit '+imageUploadURL)
-    if cv2.waitKey(1)==ord('q'): break
+    #if cv2.waitKey(1)==ord('q'): break
 cam.release()
 cv2.destroyAllWindows()
