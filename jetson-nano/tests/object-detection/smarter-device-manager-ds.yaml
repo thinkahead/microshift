@@ -54,7 +54,12 @@ spec:
             mountPath: /dev
           - name: sys-dir
             mountPath: /sys
+          - name: config-volume
+            mountPath: /root/config
       volumes:
+        - name: config-volume
+          configMap:
+            name: special-config
         - name: device-plugin
           hostPath:
             path: /var/lib/kubelet/device-plugins

@@ -1,9 +1,11 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: smarter-device-manager
+  name: special-config
   namespace: sdm
 data:
   conf.yaml: |
     - devicematch: ^video0$
       nummaxdevices: 20
+    - devicematch: ^nv.*$
+      nummaxdevices: 1
