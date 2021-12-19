@@ -87,4 +87,14 @@ oc apply -f grafana-service.yaml
 oc expose svc grafana-service # Create the route
 ```
 
-Add the "RaspberryPiIPAddress grafana-service-influxdb.cluster.local" to /etc/hosts on your laptop and login to http://grafana-service-influxdb.cluster.local using admin/admin. You wll need to change the password on first login.
+Add the "RaspberryPiIPAddress grafana-service-influxdb.cluster.local" to /etc/hosts on your laptop and login to http://grafana-service-influxdb.cluster.local using admin/admin. You will need to change the password on first login.
+
+Delete the grafana, telegraf, influxdb
+```
+oc delete route grafana-service
+oc delete -f grafana-data.yaml -f grafana-deployment.yaml -f grafana-pv.yaml -f grafana-service.yaml 
+cd ..
+oc delete -f telegraf-config.yaml -f telegraf-secrets.yaml -f telegraf-deployment.yaml
+oc delete -f influxdb-data.yaml -f influxdb-pv.yaml -f influxdb-service.yaml -f influxdb-deployment.yaml -f influxdb-secrets.yaml
+oc delete project influxdb
+```
