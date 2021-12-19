@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: grafana
+spec:
+  selector:
+    matchLabels:
+      app: grafana
+  minReadySeconds: 5
+  template:
+    metadata:
+      labels:
+        app: grafana
+    spec:
+      containers:
+      - env:
+        - name: GF_INSTALL_PLUGINS
+          value: grafana-piechart-panel, blackmirror1-singlestat-math-panel
+        - name: GF_SECURITY_ADMIN_PASSWORD
+          value: admin
+        image: grafana/grafana:5.4.3
+        name: grafana
+        volumeMounts:
+        - mountPath: /etc/grafana/provisioning
+          name: grafana-volume
+          subPath: provisioning/
+        - mountPath: /var/lib/grafana/dashboards
+          name: grafana-volume
+          subPath: dashboards/
+        - mountPath: /etc/grafana/grafana.ini
+          name: grafana-volume
+          subPath: grafana.ini
+          readOnly: true
+      restartPolicy: Always
+      volumes:
+        - name: grafana-volume
+          persistentVolumeClaim:
+            claimName: grafana-data
+        #- name: grafana-volume
+        #  hostPath:
+        #  path: /root/microshift/raspberry-pi/influxdb/grafana/

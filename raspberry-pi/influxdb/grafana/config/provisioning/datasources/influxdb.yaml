@@ -1,0 +1,27 @@
+apiVersion: 1
+
+datasources:
+- name: Analysis Server
+  orgId: 1
+  type: influxdb
+  access: proxy
+  url: http://influxdb-service:8086
+  database: telegraf
+  isDefault: false
+  version: 1
+  editable: false
+  basicAuth: true
+  basicAuthUser: admin
+  basicAuthPassword: admin
+- name: Test
+  orgId: 1
+  type: influxdb
+  access: proxy
+  url: http://influxdb-service:8086
+  database: test
+  isDefault: true
+  version: 1
+  editable: false
+  basicAuth: true
+  basicAuthUser: user
+  basicAuthPassword: user
