@@ -8,14 +8,14 @@ import (
 	"github.com/openshift/microshift/pkg/release"
 )
 
-func renderSCController(b []byte, p assets.RenderParams) ([]byte, error) {
+func renderServiceCAController(b []byte, p assets.RenderParams) ([]byte, error) {
 	data := struct {
-		ReleaseImage  assets.RenderParams
-		KeyDir, CADir string
+		ReleaseImage           assets.RenderParams
+		CAConfigMap, TLSSecret string
 	}{
 		ReleaseImage: release.Image,
-		KeyDir:       p["DataDir"] + "/resources/service-ca/secrets/service-ca",
-		CADir:        p["DataDir"] + "/certs/ca-bundle",
+		CAConfigMap:  p["ConfigMap"],
+		TLSSecret:    p["Secret"],
 	}
 	tpl := template.Must(template.New("sc").Parse(string(b)))
 	var byteBuff bytes.Buffer

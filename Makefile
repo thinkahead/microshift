@@ -2,7 +2,6 @@
 export SHELL := $(shell which bash)
 
 PROJECT_DIR := $(shell dirname $(abspath $(lastword $(MAKEFILE_LIST))))
-KUTTL_VERSION := 0.10.0
 
 # Include openshift build-machinery-go libraries
 include ./vendor/github.com/openshift/build-machinery-go/make/golang.mk
@@ -21,6 +20,11 @@ RELEASE_PRE := ${RELEASE_BASE}-0.microshift
 # because since it doesn't work with our version scheme.
 SOURCE_GIT_TAG :=$(shell git describe --tags --abbrev=7 --match '$(RELEASE_PRE)*' || echo '4.8.0-0.microshift-unknown')
 
+EMBEDDED_GIT_TAG ?= ${SOURCE_GIT_TAG}
+EMBEDDED_GIT_COMMIT ?= ${SOURCE_GIT_COMMIT}
+EMBEDDED_GIT_TREE_STATE ?= ${SOURCE_GIT_TREE_STATE}
+
+
 SRC_ROOT :=$(shell pwd)
 
 IMAGE_REPO :=quay.io/microshift/microshift
@@ -35,7 +39,18 @@ IPTABLES :=nft
 # restrict included verify-* targets to only process project files
 GO_PACKAGES=$(go list ./cmd/... ./pkg/...)
 
-GO_LD_FLAGS :=-ldflags "-X k8s.io/component-base/version.gitMajor=1 \
+ifeq ($(DEBUG),true)
+	# throw all the debug info in!
+	LD_FLAGS =
+	GC_FLAGS =-gcflags "all=-N -l"
+else
+	# strip everything we can
+	LD_FLAGS =-w -s
+	GC_FLAGS =
+endif
+
+
+GO_LD_FLAGS := $(GC_FLAGS) -ldflags "-X k8s.io/component-base/version.gitMajor=1 \
                    -X k8s.io/component-base/version.gitMajor=1 \
                    -X k8s.io/component-base/version.gitMinor=21 \
                    -X k8s.io/component-base/version.gitVersion=v1.21.0 \
@@ -48,11 +63,11 @@ GO_LD_FLAGS :=-ldflags "-X k8s.io/component-base/version.gitMajor=1 \
                    -X k8s.io/client-go/pkg/version.gitCommit=b09a9ce3 \
                    -X k8s.io/client-go/pkg/version.gitTreeState=clean \
                    -X k8s.io/client-go/pkg/version.buildDate=$(BIN_TIMESTAMP) \
-                   -X github.com/openshift/microshift/pkg/version.versionFromGit=$(SOURCE_GIT_TAG) \
-                   -X github.com/openshift/microshift/pkg/version.commitFromGit=$(SOURCE_GIT_COMMIT) \
-                   -X github.com/openshift/microshift/pkg/version.gitTreeState=$(SOURCE_GIT_TREE_STATE) \
+                   -X github.com/openshift/microshift/pkg/version.versionFromGit=$(EMBEDDED_GIT_TAG) \
+                   -X github.com/openshift/microshift/pkg/version.commitFromGit=$(EMBEDDED_GIT_COMMIT) \
+                   -X github.com/openshift/microshift/pkg/version.gitTreeState=$(EMBEDDED_GIT_TREE_STATE) \
                    -X github.com/openshift/microshift/pkg/version.buildDate=$(BIN_TIMESTAMP) \
-                   -s -w"
+                   $(LD_FLAGS)"
 
 debug:
 	@echo FLAGS:"$(GO_LD_FLAGS)"
@@ -96,17 +111,10 @@ chmod a+x "$(1)" ;\
 endef
 
 
-.PHONY: kuttl
-KUTTL := $(PROJECT_DIR)/bin/kuttl
-KUTTL_URL := https://github.com/kudobuilder/kuttl/releases/download/v$(KUTTL_VERSION)/kubectl-kuttl_$(KUTTL_VERSION)_linux_x86_64
-kuttl: ## Download kuttl
-	mkdir -p bin
-	$(call download-tool,$(KUTTL),$(KUTTL_URL))
-
-.PHONY: test-e2e
-test-e2e: kuttl
-	cd validate-microshift && $(KUTTL) test --namespace test
-
+# Execute kuttl health checks against infra pods
+.PHONY: validate-cluster
+validate-cluster:
+	cd validate-microshift && ./kuttl-test.sh 
 
 ##@ Download utilities
 
@@ -135,12 +143,17 @@ cross-build: cross-build-linux-amd64 cross-build-linux-arm64
 .PHONY: cross-build
 
 rpm:
-	BUILD=rpm RELEASE_BASE=${RELEASE_BASE} RELEASE_PRE=${RELEASE_PRE} ./packaging/rpm/make-rpm.sh local
-
+	BUILD=rpm \
+	SOURCE_GIT_COMMIT=${SOURCE_GIT_COMMIT} \
+	SOURCE_GIT_TREE_STATE=${SOURCE_GIT_TREE_STATE} RELEASE_BASE=${RELEASE_BASE}  \
+	RELEASE_PRE=${RELEASE_PRE} ./packaging/rpm/make-rpm.sh local
 .PHONY: rpm
 
 srpm:
-	BUILD=srpm RELEASE_BASE=${RELEASE_BASE} RELEASE_PRE=${RELEASE_PRE} ./packaging/rpm/make-rpm.sh local
+	BUILD=srpm \
+	SOURCE_GIT_COMMIT=${SOURCE_GIT_COMMIT} \
+	SOURCE_GIT_TREE_STATE=${SOURCE_GIT_TREE_STATE} RELEASE_BASE=${RELEASE_BASE}  \
+	RELEASE_PRE=${RELEASE_PRE} ./packaging/rpm/make-rpm.sh local
 .PHONY: srpm
 
 ###############################
@@ -222,3 +235,7 @@ release: SOURCE_GIT_TAG=$(RELEASE_PRE)-$(TIMESTAMP)
 release:
 	./scripts/release.sh --token $(TOKEN) --version $(SOURCE_GIT_TAG)
 .PHONY: release
+
+release-nightly:
+	./scripts/release.sh --nightly --version $(SOURCE_GIT_TAG)
+.PHONY: release-nightly

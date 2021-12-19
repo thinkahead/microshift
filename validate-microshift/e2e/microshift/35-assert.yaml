@@ -6,7 +6,7 @@ timeout: 500
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
-  name: kubevirt-hostpath-provisioner
-  namespace: kubevirt-hostpath-provisioner
+  name: node-resolver
+  namespace: openshift-dns
 status:
   numberReady: 1
