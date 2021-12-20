@@ -38,4 +38,4 @@ spec:
             claimName: grafana-data
         #- name: grafana-volume
         #  hostPath:
-        #  path: /root/microshift/raspberry-pi/influxdb/grafana/
+        #  path: /root/microshift/raspberry-pi/influxdb/grafana/config/
