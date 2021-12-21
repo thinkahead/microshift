@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 set -eu
 
 echo "DATA LOSS WARNING: Do you wish to stop and cleanup ALL MicroShift data AND cri-o container workloads?"
@@ -17,6 +17,8 @@ sudo bash -c '
     systemctl disable microshift 2>/dev/null
     systemctl stop --now microshift-containerized 2>/dev/null
     systemctl disable microshift-containerized 2>/dev/null
+    docker stop microshift 2>/dev/null
+    docker stop microshift-aio 2>/dev/null
     podman stop microshift 2>/dev/null
     podman stop microshift-aio 2>/dev/null
 
@@ -33,10 +35,18 @@ sudo bash -c '
     pkill -9 conmon
     pkill -9 pause
 
-
-
     echo "Removing /var/lib/microshift"
     rm -rf /var/lib/microshift
+
+    # Cleanup the volumes and subPaths in /var/lib/kubelet/pods/
+    #df -h | grep "^tmpfs.*/var/lib/kubelet/pods/" | awk "{print $NF}" | xargs -n1 umount
+    mount | grep "^tmpfs.* on /var/lib/kubelet/pods/" | awk "{print $3}" | xargs -n1 umount
+    mount | grep "^/dev/.* on /var/lib/kubelet/pods/" | awk "{print $3}" | xargs -n1 umount
+    rm -rf /var/lib/kubelet/pods/*
+    rm -rf /var/hpvolumes/*
+    systemctl stop crio
+    rm -rf /var/lib/containers/*
+    systemctl start crio
 
     echo "Cleanup succeeded"
 '
