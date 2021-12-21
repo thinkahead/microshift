@@ -44,6 +44,7 @@ sudo bash -c '
     rm -rf /var/lib/kubelet/pods/*
     rm -rf /var/hpvolumes/*
     systemctl stop crio
+    sleep 2
     rm -rf /var/lib/containers/*
     systemctl start crio
 
