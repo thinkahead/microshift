@@ -8,6 +8,7 @@ RUN chmod +x /usr/bin/microshift
 RUN microdnf install -y \
     libnetfilter_conntrack libnfnetlink libpcap \
     policycoreutils-python-utils \
+    findutils \
     && microdnf clean all
 
 # Error with iptables v1.8.7 (nf_tables): Could not fetch rule set generation id: Invalid argument
