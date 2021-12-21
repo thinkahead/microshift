@@ -38,10 +38,9 @@ sudo bash -c '
     echo "Removing /var/lib/microshift"
     rm -rf /var/lib/microshift
 
-    # Cleanup the volumes and subPaths in /var/lib/kubelet/pods/
-    #df -h | grep "^tmpfs.*/var/lib/kubelet/pods/" | awk "{print $NF}" | xargs -n1 umount
-    mount | grep "^tmpfs.* on /var/lib/kubelet/pods/" | awk "{print $3}" | xargs -n1 umount
-    mount | grep "^/dev/.* on /var/lib/kubelet/pods/" | awk "{print $3}" | xargs -n1 umount
+    echo "Unmounting /var/lib/kubelet/pods/..."
+    mount | grep "^tmpfs.* on /var/lib/kubelet/pods/" | awk "{print \$3}" | xargs -n1 -r umount
+    mount | grep "^/dev/.* on /var/lib/kubelet/pods/" | awk "{print \$3}" | xargs -n1 -r umount
     rm -rf /var/lib/kubelet/pods/*
     rm -rf /var/hpvolumes/*
     systemctl stop crio
