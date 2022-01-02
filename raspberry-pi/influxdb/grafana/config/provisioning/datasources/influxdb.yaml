@@ -13,6 +13,18 @@ datasources:
   basicAuth: true
   basicAuthUser: admin
   basicAuthPassword: admin
+- name: Balena Sense
+  orgId: 1
+  type: influxdb
+  access: proxy
+  url: http://influxdb-service:8086
+  database: balena-sense
+  isDefault: false
+  version: 1
+  editable: false
+  basicAuth: true
+  basicAuthUser: admin
+  basicAuthPassword: admin
 - name: Test
   orgId: 1
   type: influxdb

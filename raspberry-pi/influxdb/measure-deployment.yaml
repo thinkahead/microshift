@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: measure-deployment
+spec:
+  selector:
+    matchLabels:
+      app: measure
+  minReadySeconds: 5
+  template:
+    metadata:
+      labels:
+        app: measure
+    spec:
+      containers:
+      - image: docker.io/karve/measure
+        imagePullPolicy: Always
+        name: measure
+        securityContext:
+          privileged: true
+        envFrom:
+         - secretRef:
+             name: influxdb-secrets
+
