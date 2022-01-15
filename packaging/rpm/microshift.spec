@@ -49,6 +49,7 @@ BuildRequires: systemd
 
 Requires: cri-o
 Requires: cri-tools
+Requires: iptables
 Requires: microshift-selinux
 
 %{?systemd_requires}
@@ -111,6 +112,9 @@ systems, scale testing, and provisioning of lightweight Kubernetes control plane
 
 Note: MicroShift is still early days and moving fast. Features are missing.
 Things break. But you can still help shape it, too.
+
+%define microshift_relabel_files() \
+restorecon -R /var/hpvolumes
 
 %package selinux
 Summary: SELinux policies for MicroShift
@@ -177,6 +181,9 @@ install -p -m755 hack/cleanup.sh %{buildroot}%{_bindir}/cleanup-all-microshift-d
 
 restorecon -v %{buildroot}%{_bindir}/microshift
 
+install -d -m755 %{buildroot}%{_sysconfdir}/crio/crio.conf.d
+install -p -m644 packaging/crio.conf.d/microshift.conf %{buildroot}%{_sysconfdir}/crio/crio.conf.d/microshift.conf
+
 install -d -m755 %{buildroot}/%{_unitdir}
 install -p -m644 packaging/systemd/microshift.service %{buildroot}%{_unitdir}/microshift.service
 install -p -m644 packaging/systemd/microshift-containerized.service %{buildroot}%{_unitdir}/microshift-containerized.service
@@ -186,7 +193,6 @@ mkdir -p -m755 %{buildroot}/var/run/kubelet
 mkdir -p -m755 %{buildroot}/var/lib/kubelet/pods
 mkdir -p -m755 %{buildroot}/var/run/secrets/kubernetes.io/serviceaccount
 mkdir -p -m755 %{buildroot}/var/hpvolumes
-restorecon -v %{buildroot}/var/hpvolumes
 
 install -d %{buildroot}%{_datadir}/selinux/packages/%{selinuxtype}
 install -m644 packaging/selinux/microshift.pp.bz2 %{buildroot}%{_datadir}/selinux/packages/%{selinuxtype}
@@ -195,15 +201,27 @@ install -m644 packaging/selinux/microshift.pp.bz2 %{buildroot}%{_datadir}/selinu
 
 %systemd_post microshift.service
 
+# only for install, not on upgrades
+if [ $1 -eq 1 ]; then
+	# if crio was already started, restart it so it will catch /etc/crio/crio.conf.d/microshift.conf
+	systemctl is-active --quiet crio && systemctl restart --quiet crio
+fi
+
 %post selinux
 
 %selinux_modules_install -s %{selinuxtype} %{_datadir}/selinux/packages/%{selinuxtype}/microshift.pp.bz2
+if /usr/sbin/selinuxenabled ; then
+    %microshift_relabel_files
+fi;
 
 %postun selinux
 
 if [ $1 -eq 0 ]; then
     %selinux_modules_uninstall -s %{selinuxtype} microshift
 fi
+
+%post containerized
+mv /usr/lib/systemd/system/microshift-containerized.service /usr/lib/systemd/system/microshift.service
 
 %posttrans selinux
 
@@ -220,9 +238,15 @@ fi
 %{_bindir}/microshift
 %{_bindir}/cleanup-all-microshift-data
 %{_unitdir}/microshift.service
+%{_sysconfdir}/crio/crio.conf.d/microshift.conf
 
 %files selinux
 
+/var/run/flannel
+/var/run/kubelet
+/var/lib/kubelet/pods
+/var/run/secrets/kubernetes.io/serviceaccount
+/var/hpvolumes
 %{_datadir}/selinux/packages/%{selinuxtype}/microshift.pp.bz2
 %ghost %{_sharedstatedir}/selinux/%{selinuxtype}/active/modules/200/microshift
 

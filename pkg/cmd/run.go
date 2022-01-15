@@ -20,6 +20,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
+	"k8s.io/klog/v2"
 )
 
 const (
@@ -43,6 +44,7 @@ func NewRunMicroshiftCommand() *cobra.Command {
 	cmd.MarkFlagFilename("config", "yaml", "yml")
 	// All other flags will be read after reading both config file and env vars.
 	flags.String("data-dir", cfg.DataDir, "Directory for storing runtime data.")
+	flags.String("audit-log-dir", cfg.AuditLogDir, "Directory for storing audit logs.")
 	flags.StringSlice("roles", cfg.Roles, "Roles of this MicroShift instance.")
 
 	return cmd
@@ -59,11 +61,20 @@ func RunMicroshift(cfg *config.MicroshiftConfig, flags *pflag.FlagSet) error {
 	}
 
 	os.MkdirAll(cfg.DataDir, 0700)
-	os.MkdirAll(cfg.LogDir, 0700)
+	os.MkdirAll(cfg.AuditLogDir, 0700)
 
 	// TODO: change to only initialize what is strictly necessary for the selected role(s)
 	if _, err := os.Stat(filepath.Join(cfg.DataDir, "certs")); errors.Is(err, os.ErrNotExist) {
 		initAll(cfg)
+	} else {
+		err = loadCA(cfg)
+		if err != nil {
+			err := os.RemoveAll(filepath.Join(cfg.DataDir, "certs"))
+			if err != nil {
+				klog.ErrorS(err, "removing old certs directory")
+			}
+			util.Must(initAll(cfg))
+		}
 	}
 
 	m := servicemanager.NewServiceManager()
