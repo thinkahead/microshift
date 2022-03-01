@@ -1,0 +1,47 @@
+---
+apiVersion: kubevirt.io/v1alpha3
+kind: VirtualMachineInstance
+metadata:
+  labels:
+    special: vmi-cirros
+  name: vmi-cirros
+spec:
+  networks:
+  - name: default
+    pod: {}
+  domain:
+    devices:
+      interfaces:
+        - name: default
+          bridge: {}
+          model: virtio
+      disks:
+      - disk:
+          bus: virtio
+        name: containerdisk
+      - disk:
+          bus: virtio
+        name: cloudinitdisk
+      rng: {}
+    machine:
+      type: ""
+    resources:
+      requests:
+        memory: 1024M 
+  terminationGracePeriodSeconds: 0
+  volumes:
+  - containerDisk:
+      image: quay.io/kubevirt/cirros-container-disk-demo:20220212_2d8bc49b0-arm64
+    name: containerdisk
+  - cloudInitNoCloud:
+      userData: |
+        #cloud-config
+        hostname: mycirros
+        password: cirros
+        chpasswd: { expire: False }
+        ssh_pwauth: True
+        disable_root: false
+        ssh_authorized_keys:
+          - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDrrXNkuuZ04EO6dUDzSCV3a35Is+BcMsUFSNBkInsy0PaK0sZBrA7PxV/5M1Pkwc+h4BvmBVAoXn/GTZbOhFWYTaOIPjbW6eKxwz1IQQE2uoqgTRo6WsF6BIpnOl0b59bnQGNHayx0epDdZI02WKygsj5I013TNxEwjBeYExkax1COatBUmK4t4Q8xcN+CoGgzIizuHFMjJt2AurHBTvRX8bG38OlB61liL1CDqU+mEZZeu8jucJJEU/umX3WtPRl/1De7d6vYFZvF0m7QioqB/eKwoBfzgmLf0FT9zTgJMlelKZ5rfy+1Hpzj8YsYG7tbWz1B4hnAZUngqoFdOGKP
+    name: cloudinitdisk
+
