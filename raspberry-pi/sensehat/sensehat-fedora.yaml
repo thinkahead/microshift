@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sensehat-deployment
+spec:
+  selector:
+    matchLabels:
+      app: sensehat
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: sensehat
+    spec:
+      containers:
+      - name: sensehat
+        image: docker.io/karve/sensehat-fedora
+        imagePullPolicy: Always
+        #command: ["/bin/bash","-c","sleep infinity"]
+        securityContext:
+          privileged: true
+        env:
+          - name: WebSocketURL
+            value: "ws://nodered-svc-nodered.cluster.local/ws/chat"
+          - name: VideoSource
+            value: "/dev/video0"
+          - name: ImageUploadURL
+            value: "http://nodered-svc-nodered.cluster.local/upload"
+        ports:
+        - containerPort: 8080
+        # resource required for hpa
+        resources:
+          requests:
+            memory: 128M
+            cpu: 125m
+          limits:
+            memory: 1024M
+            cpu: 1000m
+      hostAliases:
+      - hostnames:
+        - nodered-svc-nodered.cluster.local
+        ip: 192.168.1.209
+---
+apiVersion: v1
+kind: Service
+metadata:
+ name: sensehat-svc
+ labels:
+   app: sensehat
+spec:
+ type: NodePort
+ ports:
+ - port: 8080
+ selector:
+   app: sensehat
+

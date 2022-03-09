@@ -1,0 +1,17 @@
+FROM docker.io/karve/sensehat
+RUN apt-get -y install python-smbus
+RUN apt-get remove -y python-websocket
+RUN apt-get install -y python-pip
+COPY sense_hat.py.new /usr/lib/python2.7/dist-packages/sense_hat/sense_hat.py
+
+ADD temperature.py /temperature.py
+ADD testcam.py /testcam.py
+ADD sparkles.py /sparkles.py
+ADD sendimages1.py /sendimages1.py
+ADD sendimages2.py /sendimages2.py
+ADD sendtonodered.py /sendtonodered.py
+RUN pip install websocket-client
+
+WORKDIR /
+
+CMD ["python", "/sendtonodered.py"]
