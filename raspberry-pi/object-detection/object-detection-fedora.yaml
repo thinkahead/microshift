@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: object-detection-deployment
+spec:
+  selector:
+    matchLabels:
+      app: object-detection
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: object-detection
+    spec:
+      containers:
+      - name: object-detection
+        image: docker.io/karve/object-detection-raspberrypi4-fedora
+        imagePullPolicy: Always
+        #command: ["/bin/bash","-c","sleep infinity"]
+        securityContext:
+          privileged: true
+        env:
+          - name: WebSocketURL
+            value: "ws://nodered-svc-nodered.cluster.local/ws/chat"
+          - name: ImageUploadURL
+            value: http://nodered-svc-nodered.cluster.local/upload
+        ports:
+        - containerPort: 8080
+        # resource required for hpa
+        resources:
+          requests:
+            memory: 128M
+            cpu: 125m
+          limits:
+            memory: 1024M
+            cpu: 1000m
+      hostAliases:
+      - hostnames:
+        - nodered-svc-nodered.cluster.local
+        ip: 192.168.1.209
