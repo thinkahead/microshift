@@ -1,0 +1,34 @@
+FROM arm64v8/debian AS build
+RUN apt-get update;apt-get -y install gcc g++ make git curl wget
+RUN wget https://golang.org/dl/go1.17.2.linux-arm64.tar.gz
+RUN rm -rf /usr/local/go && tar -C /usr/local -xzf go1.17.2.linux-arm64.tar.gz
+RUN rm -f go1.17.2.linux-arm64.tar.gz
+RUN export PATH=$PATH:/usr/local/go/bin;export GOPATH=/root/go;go version
+RUN curl -fsSL https://deb.nodesource.com/setup_14.x | bash -
+RUN apt-get install -y nodejs
+RUN curl -sL https://dl.yarnpkg.com/debian/pubkey.gpg | gpg --dearmor > /usr/share/keyrings/yarnkey.gpg
+RUN echo "deb [signed-by=/usr/share/keyrings/yarnkey.gpg] https://dl.yarnpkg.com/debian stable main" > /etc/apt/sources.list.d/yarn.list
+RUN apt-get update && apt-get -y install yarn
+
+RUN mkdir -p /go/src/github.com/openshift/console/
+ADD . /go/src/github.com/openshift/console/
+WORKDIR /go/src/github.com/openshift/console/
+RUN yarn config set network-timeout 300000
+RUN export PATH=$PATH:/usr/local/go/bin;export GOPATH=/root/go;./build.sh
+
+FROM openshift/origin-base
+FROM arm64v8/debian
+
+COPY --from=build /go/src/github.com/openshift/console/frontend/public/dist /opt/bridge/static
+COPY --from=build /go/src/github.com/openshift/console/bin/bridge /opt/bridge/bin/bridge
+COPY --from=build /go/src/github.com/openshift/console/pkg/graphql/schema.graphql /pkg/graphql/schema.graphql
+
+LABEL io.k8s.display-name="OpenShift Console" \
+      io.k8s.description="This is a component of OpenShift Container Platform and provides a web console." \
+      io.openshift.tags="openshift" \
+      maintainer="Alexei Karve <karve@us.ibm.com>"
+
+# doesn't require a root user.
+USER 1001
+
+CMD [ "/opt/bridge/bin/bridge", "--public-dir=/opt/bridge/static" ]
