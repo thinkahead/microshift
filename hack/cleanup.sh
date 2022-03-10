@@ -39,6 +39,7 @@ sudo bash -c '
     rm -rf /var/lib/microshift
 
     echo "Unmounting /var/lib/kubelet/pods/..."
+    mount | grep "^overlay.* on /var/lib/kubelet/pods/" | awk "{print \$3}" | xargs -n1 -r umount
     mount | grep "^tmpfs.* on /var/lib/kubelet/pods/" | awk "{print \$3}" | xargs -n1 -r umount
     mount | grep "^/dev/.* on /var/lib/kubelet/pods/" | awk "{print \$3}" | xargs -n1 -r umount
     rm -rf /var/lib/kubelet/pods/*
