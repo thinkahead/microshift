@@ -1,8 +1,15 @@
 FROM docker.io/karve/sensehat
-RUN apt-get -y install python-smbus
-RUN apt-get remove -y python-websocket
-RUN apt-get install -y python-pip
+RUN apt-get update
+RUN apt-get install -y wget
+#RUN apt-get -y install python-smbus
+#RUN apt-get remove -y python-websocket
+#RUN apt-get install -y python-pip
 COPY sense_hat.py.new /usr/lib/python2.7/dist-packages/sense_hat/sense_hat.py
+#RUN wget https://files.pythonhosted.org/packages/0f/74/ecd13431bcc456ed390b44c8a6e917c1820365cbebcb6a8974d1cd045ab4/pip-10.0.1-py2.py3-none-any.whl
+#RUN python pip-10.0.1-py2.py3-none-any.whl/pip install --no-index pip-10.0.1-py2.py3-none-any.whl
+RUN wget https://www.piwheels.org/simple/pip/pip-20.3.4-py2.py3-none-any.whl#sha256=217ae5161a0e08c0fb873858806e3478c9775caffce5168b50ec885e358c199d
+RUN python pip-20.3.4-py2.py3-none-any.whl/pip install --no-index pip-20.3.4-py2.py3-none-any.whl
+RUN pip install --upgrade pip
 
 ADD temperature.py /temperature.py
 ADD testcam.py /testcam.py
@@ -10,7 +17,8 @@ ADD sparkles.py /sparkles.py
 ADD sendimages1.py /sendimages1.py
 ADD sendimages2.py /sendimages2.py
 ADD sendtonodered.py /sendtonodered.py
-RUN pip install websocket-client
+#RUN pip install websocket-client
+RUN pip install setuptools smbus
 
 WORKDIR /
 
