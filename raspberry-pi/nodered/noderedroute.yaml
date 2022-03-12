@@ -1,0 +1,16 @@
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  labels:
+    app: nodered
+  name: nodered-route
+  namespace: nodered
+spec:
+  host: nodered-svc-nodered.cluster.local
+  port:
+    targetPort: 1880
+  to:
+    kind: Service
+    name: nodered-svc
+    weight: 100
+  wildcardPolicy: None
