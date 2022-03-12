@@ -1,0 +1,299 @@
+[
+    {
+        "id": "3e30dc50ae28f61f",
+        "type": "tab",
+        "label": "Image",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "3a45fd4c213f8992",
+        "type": "tab",
+        "label": "Chat",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "bc740d23.438bf",
+        "type": "websocket-listener",
+        "path": "/ws/chat",
+        "wholemsg": "false"
+    },
+    {
+        "id": "7c30fb48.99cd2c",
+        "type": "http in",
+        "z": "3e30dc50ae28f61f",
+        "name": "",
+        "url": "/simple",
+        "method": "get",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 150,
+        "y": 100,
+        "wires": [
+            [
+                "3153fbd3.203a64"
+            ]
+        ]
+    },
+    {
+        "id": "3153fbd3.203a64",
+        "type": "template",
+        "z": "3e30dc50ae28f61f",
+        "name": "html",
+        "field": "payload",
+        "fieldType": "msg",
+        "format": "handlebars",
+        "syntax": "mustache",
+        "template": "<h1>Upload a file here:</h1>\n\n<form action=\"/upload\" method=\"POST\" enctype=\"multipart/form-data\">\n    <input type=\"file\" name=\"myFile\" />\n    <input type=\"submit\" value=\"Submit\">\n</form>",
+        "output": "str",
+        "x": 490,
+        "y": 100,
+        "wires": [
+            [
+                "737e44d2.373a64"
+            ]
+        ]
+    },
+    {
+        "id": "737e44d2.373a64",
+        "type": "http response",
+        "z": "3e30dc50ae28f61f",
+        "name": "",
+        "x": 630,
+        "y": 100,
+        "wires": []
+    },
+    {
+        "id": "46e01eea.4a46a",
+        "type": "comment",
+        "z": "3e30dc50ae28f61f",
+        "name": "Simple",
+        "info": "",
+        "x": 130,
+        "y": 60,
+        "wires": []
+    },
+    {
+        "id": "7d8e179a.283e4",
+        "type": "http response",
+        "z": "3e30dc50ae28f61f",
+        "name": "",
+        "x": 630,
+        "y": 160,
+        "wires": []
+    },
+    {
+        "id": "25859a94.7d9976",
+        "type": "http in",
+        "z": "3e30dc50ae28f61f",
+        "name": "",
+        "url": "/upload",
+        "method": "post",
+        "upload": true,
+        "swaggerDoc": "",
+        "x": 150,
+        "y": 160,
+        "wires": [
+            [
+                "d7e5df8b.97a4e8",
+                "d63bc821ef4d1e2e"
+            ]
+        ]
+    },
+    {
+        "id": "e1643981.20d7c8",
+        "type": "template",
+        "z": "3e30dc50ae28f61f",
+        "name": "text",
+        "field": "payload",
+        "fieldType": "msg",
+        "format": "handlebars",
+        "syntax": "mustache",
+        "template": "File {{name}} uploaded\n",
+        "output": "str",
+        "x": 490,
+        "y": 160,
+        "wires": [
+            [
+                "7d8e179a.283e4"
+            ]
+        ]
+    },
+    {
+        "id": "d7e5df8b.97a4e8",
+        "type": "function",
+        "z": "3e30dc50ae28f61f",
+        "name": "toBase64",
+        "func": "msg.name = msg.req.files[0].originalname;\n\nif (msg.req.files[0].mimetype.includes('image')) {\n    msg.payload = `<img src=\"data:image/gif;base64,${msg.req.files[0].buffer.toString('base64')}\">`;\n} else {\n    msg.payload = msg.req.files[0].buffer.toString();\n}\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 340,
+        "y": 160,
+        "wires": [
+            [
+                "e1643981.20d7c8"
+            ]
+        ]
+    },
+    {
+        "id": "d63bc821ef4d1e2e",
+        "type": "function",
+        "z": "3e30dc50ae28f61f",
+        "name": "toBase64",
+        "func": "msg.name = msg.req.files[0].originalname;\n\nif (msg.req.files[0].mimetype.includes('image')) {\n    msg.payload = `${msg.req.files[0].buffer.toString('base64')}`;\n} else {\n    msg.payload = msg.req.files[0].buffer.toString();\n}\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 330,
+        "y": 200,
+        "wires": [
+            [
+                "7518e9142f5680d8",
+                "43fafba17925df91"
+            ]
+        ]
+    },
+    {
+        "id": "7518e9142f5680d8",
+        "type": "image viewer",
+        "z": "3e30dc50ae28f61f",
+        "name": "",
+        "width": "640",
+        "data": "payload",
+        "dataType": "msg",
+        "active": false,
+        "x": 490,
+        "y": 200,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "1880286475e54335",
+        "type": "template",
+        "z": "3e30dc50ae28f61f",
+        "name": "html",
+        "field": "payload",
+        "fieldType": "msg",
+        "format": "handlebars",
+        "syntax": "mustache",
+        "template": "<p></p>File {{name}} uploaded !</p>\n\n<h2>Contents:</h2>\n\n<pre>\n{{{payload}}}\n</pre>",
+        "output": "str",
+        "x": 780,
+        "y": 160,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "43fafba17925df91",
+        "type": "image",
+        "z": "3e30dc50ae28f61f",
+        "name": "",
+        "width": "640",
+        "data": "payload",
+        "dataType": "msg",
+        "thumbnail": false,
+        "active": true,
+        "pass": false,
+        "outputs": 0,
+        "x": 160,
+        "y": 240,
+        "wires": []
+    },
+    {
+        "id": "0ea52358ab8e2391",
+        "type": "comment",
+        "z": "3e30dc50ae28f61f",
+        "name": "Replace-text-by-html",
+        "info": "",
+        "x": 940,
+        "y": 160,
+        "wires": []
+    },
+    {
+        "id": "1f044347b4962306",
+        "type": "websocket in",
+        "z": "3a45fd4c213f8992",
+        "name": "",
+        "server": "bc740d23.438bf",
+        "x": 130,
+        "y": 100,
+        "wires": [
+            [
+                "09dc90bbddd6b23d"
+            ]
+        ]
+    },
+    {
+        "id": "09dc90bbddd6b23d",
+        "type": "function",
+        "z": "3a45fd4c213f8992",
+        "name": "",
+        "func": "delete msg._session;\nreturn msg;\n\n",
+        "outputs": 1,
+        "x": 304,
+        "y": 100,
+        "wires": [
+            [
+                "f16a1212f8341911"
+            ]
+        ]
+    },
+    {
+        "id": "f16a1212f8341911",
+        "type": "websocket out",
+        "z": "3a45fd4c213f8992",
+        "name": "",
+        "server": "bc740d23.438bf",
+        "x": 485,
+        "y": 100,
+        "wires": []
+    },
+    {
+        "id": "428922193679ca2d",
+        "type": "http in",
+        "z": "3a45fd4c213f8992",
+        "name": "",
+        "url": "/chat",
+        "method": "get",
+        "x": 138,
+        "y": 168,
+        "wires": [
+            [
+                "316414fb7c1e99f9"
+            ]
+        ]
+    },
+    {
+        "id": "316414fb7c1e99f9",
+        "type": "template",
+        "z": "3a45fd4c213f8992",
+        "name": "",
+        "field": "payload",
+        "fieldType": "msg",
+        "syntax": "mustache",
+        "template": "<head>\n  <meta name=\"viewport\" content=\"width=320, initial-scale=1\">\n  <title>Chat</title>\n<script type=\"text/javascript\">\n\n  function createSystemMessage(message) {\n    var message = document.createTextNode(message);\n\n    var messageBox = document.createElement('p');\n    messageBox.className = 'system';\n\n    messageBox.appendChild(message);\n\n    var chat = document.getElementById('chat_box');\n    chat.appendChild(messageBox);\n  }\n\n  function createUserMessage(user, message) {\n    var user = document.createTextNode(user + ': ');\n\n    var userBox = document.createElement('span');\n    userBox.className = 'username';\n    userBox.appendChild(user);\n\n    var message = document.createTextNode(message);\n\n    var messageBox = document.createElement('p');\n    messageBox.appendChild(userBox);\n    messageBox.appendChild(message);\n\n    var chat = document.getElementById('chat_box');\n    chat.appendChild(messageBox);\n  }\n\n  var wsUri = \"ws://{{req.headers.host}}/ws/chat\";\n  var wsglobal;\n  \n  function connect() {\n    var ws = new WebSocket(wsUri);\n\n    ws.onopen = function(ev) {\n      createSystemMessage('[Connected]');\n    };\n\n    ws.onclose = function(ev) {\n      createSystemMessage('[Disconnected]');\n      connect();\n    }\n\n    ws.onmessage = function(ev) {\n      var payload = JSON.parse(ev.data);\n      createUserMessage(payload.user, payload.message);\n\n      var chat = document.getElementById('chat_box');\n      chat.scrollTop = chat.scrollHeight;\n    }\n    \n    wsglobal=ws;\n  }\n  \n  connect();\n  function clearMessages() {\n      document.getElementById('chat_box').innerHTML=\"\";\n  }\n  function sendMessage() {\n    var user = document.getElementById('user');\n    var message = document.getElementById('message');\n\n    var payload = {\n      message: message.value,\n      user: user.value,\n      ts: (new Date()).getTime()\n    };\n\n    wsglobal.send(JSON.stringify(payload));\n    message.value = \"\";\n  };\n</script>\n\n<style type=\"text/css\">\n  * {\n    font-family: \"Palatino Linotype\", \"Book Antiqua\", Palatino, serif;\n    font-style: italic;\n    font-size: 24px;\n  }\n\n  html, body, #wrapper {\n    margin: 0;\n    padding: 0;\n    height: 100%;\n  }\n\n  #wrapper {\n    background-color: #ecf0f1;\n  }\n\n  #chat_box {\n    box-sizing: border-box;\n    height: 100%;\n    overflow: auto;\n    padding-bottom: 50px;\n  }\n\n  #footer {\n    box-sizing: border-box;\n    position: fixed;\n    bottom: 0;\n    height: 50px;\n    width: 100%;\n    background-color: #2980b9;\n  }\n\n  #footer .content {\n    padding-top: 4px;\n    position: relative;\n  }\n\n  #user { width: 15%; }\n  #message { width: 58%; }\n  #clear_btn {\n    width: 10%;\n    position: absolute;\n    right: 15%;\n    bottom: 0;\n    margin: 0;\n  }\n  #send_btn {\n    width: 10%;\n    position: absolute;\n    right: 0;\n    bottom: 0;\n    margin: 0;\n  }\n\n  .content {\n    width: 70%;\n    margin: 0 auto;\n  }\n\n  input[type=\"text\"],\n  input[type=\"button\"] {\n    border: 0;\n    color: #fff;\n  }\n\n  input[type=\"text\"] {\n    background-color: #146EA8;\n    padding: 3px 10px;\n  }\n\n  input[type=\"button\"] {\n    background-color: #f39c12;\n    border-right: 2px solid #e67e22;\n    border-bottom: 2px solid #e67e22;\n    min-width: 70px;\n    display: inline-block;\n  }\n\n  input[type=\"button\"]:hover {\n    background-color: #e67e22;\n    border-right: 2px solid #f39c12;\n    border-bottom: 2px solid #f39c12;\n    cursor: pointer;\n  }\n\n  .system,\n  .username {\n    color: #aaa;\n    font-style: italic;\n    font-family: monospace;\n    font-size: 16px;\n  }\n\n  @media(max-width: 1000px) {\n    .content { width: 90%; }\n  }\n\n  @media(max-width: 780px) {\n    #footer { height: 91px; }\n    #chat_box { padding-bottom: 91px; }\n\n    #user { width: 100%; }\n    #message { width: 80%; }\n  }\n\n  @media(max-width: 400px) {\n    #footer { height: 135px; }\n    #chat_box { padding-bottom: 135px; }\n\n    #message { width: 100%; }\n    #send_btn {\n      position: relative;\n      margin-top: 3px;\n      width: 100%;\n    }\n  }\n</style>\n</head>\n\n<body>\n  <div id=\"wrapper\">\n    <div id=\"chat_box\" class=\"content\"></div>\n\n    <div id=\"footer\">\n      <div class=\"content\">\n        <input type=\"text\" id=\"user\" placeholder=\"Who are you?\" />\n        <input type=\"text\" id=\"message\" placeholder=\"What do you want to say?\" />\n        <input type=\"button\" id=\"send_btn\" value=\"Send\" onclick=\"sendMessage()\">\n        <input type=\"button\" id=\"clear_btn\" value=\"Clear\" onclick=\"clearMessages()\">\n      </div>\n    </div>\n  </div>\n</body>\n\n",
+        "x": 304,
+        "y": 168,
+        "wires": [
+            [
+                "7f3f72c7d757f412"
+            ]
+        ]
+    },
+    {
+        "id": "7f3f72c7d757f412",
+        "type": "http response",
+        "z": "3a45fd4c213f8992",
+        "name": "",
+        "x": 447,
+        "y": 168,
+        "wires": []
+    }
+]
