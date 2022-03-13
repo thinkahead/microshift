@@ -23,11 +23,8 @@ oc apply -f telegraf-config.yaml -f telegraf-secrets.yaml -f telegraf-deployment
 oc wait -f telegraf-deployment.yaml --for condition=available
 
 cd grafana
-#mkdir /var/hpvolumes/grafana
-#cp -r config/* /var/hpvolumes/grafana/.
-ssh -p 22222 root@mydevice.local mkdir /mnt/data/hpvolumes/grafana
-scp -P 22222 -r config/* root@mydevice.local:/mnt/data/hpvolumes/grafana/.
-#ssh -p 22222 root@mydevice.local ls -las /mnt/data/hpvolumes/grafana
+mkdir /var/hpvolumes/grafana
+cp -r config/* /var/hpvolumes/grafana/.
 oc apply -f grafana-pv.yaml
 oc apply -f grafana-data.yaml
 while [[ $(kubectl get pvc grafana-data -o 'jsonpath={..status.phase}') != "Bound" ]]; do echo "waiting for PVC status" && sleep 1; done
