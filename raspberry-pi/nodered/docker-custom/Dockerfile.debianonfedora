@@ -3,7 +3,7 @@ ARG NODE_VERSION=14
 ARG OS=bullseye-slim
 
 #### Stage BASE ########################################################################################################
-FROM ${ARCH}/node:${NODE_VERSION}-${OS} AS base
+FROM docker.io/${ARCH}/node:${NODE_VERSION}-${OS} AS base
 
 # Copy scripts
 COPY scripts/*.sh /tmp/
@@ -96,7 +96,9 @@ RUN git clone https://github.com/astro-pi/python-sense-hat && \
 RUN ln -s /usr/lib/python3 /usr/lib/python2.7 && \
     ln -s /usr/bin/python3 /usr/bin/python && \
     ln -s /usr/local/lib/python3.9/dist-packages/sense_hat-2.2.0-py3.9.egg/sense_hat /usr/lib/python2.7/dist-packages/sense_hat
-
+COPY sense_hat.py.new /usr/local/lib/python3.9/dist-packages/sense_hat-2.2.0-py3.9.egg/sense_hat/sense_hat.py
+COPY node-red-node-pi-sense-hat/sensehat.py /tmp
+RUN pip3 install smbus smbus2
 #USER node-red
 
 # Env variables

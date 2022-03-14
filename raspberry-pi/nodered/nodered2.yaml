@@ -20,13 +20,16 @@ spec:
           claimName: noderedpvc
       containers:
       - name: nodered
-        image: docker.io/karve/nodered:arm64
+        image: docker.io/karve/nodered-fedora:arm64
         imagePullPolicy: Always
         command: ["/bin/bash", "-c"]
         args:
           - cd /data;
             echo Installing Nodes;
             npm install;
+            ls /tmp;
+            ls /data/node_modules/node-red-node-pi-sense-hat/;
+            (sleep 15;mv -f /tmp/sensehat.py /data/node_modules/node-red-node-pi-sense-hat/sensehat.py)&
             echo Starting NodeRed;
             cd /usr/src/node-red;
             npm start --cache /data/.npm -- --userDir /data;

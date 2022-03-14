@@ -6,6 +6,9 @@
     "dependencies": {
         "node-red-contrib-image-output": "~0.6.3",
         "node-red-contrib-image-tools": "~2.0.4",
-        "node-red-node-base64": "~0.3.0"
+        "node-red-dashboard": "~3.1.6",
+        "node-red-node-base64": "~0.3.0",
+        "node-red-node-pi-sense-hat": "~0.1.1",
+        "node-red-node-smooth": "~0.1.2"
     }
 }
