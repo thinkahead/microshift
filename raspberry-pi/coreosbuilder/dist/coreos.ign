@@ -1,0 +1,91 @@
+{
+  "ignition": {
+    "version": "3.3.0"
+  },
+  "passwd": {
+    "users": [
+      {
+        "groups": [
+          "wheel"
+        ],
+        "name": "core",
+        "passwordHash": "$y$j9T$fYArA8LEcBIzP.sNMpMb3/$LcOluQ525/l0CckQ82m7jtm/qObHmYQECnRX2RD3OT1",
+        "sshAuthorizedKeys": [
+          "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCW7lpNQJQbhYuGYQRfpNFXrUuRARphlRDUyJaEfHuqvQvdSnsU0TIbB7mjXc6vmRHTkxOaZtWhhLQX0ybRxTZvfSoJNWh9nGvcJP60r1awQ5IPdfGW4gYFUYZcbNZe8HAdAb9XRruid2p9wct/mIikg80cRj9aYm46eIP2Ibilx5GUaae/2/yvPkLVGvA3nYnpSlxS4nQrqhplsIGIdpxJsR1O0Zpy1RBbxyADk3xxg/8FddW7H+XX33ECPlL1o6tZW6EQiI6Xa77Ep5xWCsY4NIPNr/02sCB/54DN7C417mDqJ3Pw7685koXLFo6aLCCB1RNpvftbDVFYa4T2ygww8K7aKG7ALJCe+OPpBegXUU/jtWUpOgIq+vOxfUbBhlQkyiXLLeujznuV7XrAztTQtpgBrKyMC3QDIECO5/vLVvITKK+3s30uMDM7kjrky9Ng6Zfbi6ThughpJYCqrWAyPM53wxeVJK1QVTG5EBTFO2grPjbBoLMyzQbmHa7vpwE= root@microshift.example.com"
+        ]
+      }
+    ]
+  },
+  "storage": {
+    "directories": [
+      {
+        "path": "/var/lib/microshift"
+      },
+      {
+        "path": "/var/lib/kubelet"
+      },
+      {
+        "path": "/var/hpvolumes"
+      },
+      {
+        "overwrite": true,
+        "path": "/var/home/core/bin"
+      }
+    ],
+    "files": [
+      {
+        "overwrite": true,
+        "path": "/etc/hostname",
+        "contents": {
+          "source": "data:,coreos"
+        },
+        "mode": 420
+      },
+      {
+        "overwrite": true,
+        "path": "/etc/yum.repos.d/group_redhat-et-microshift-fedora-35.repo",
+        "contents": {
+          "compression": "gzip",
+          "source": "data:;base64,H4sIAAAAAAAC/6yQsWrEMAyGdz+Fh1sTN2vAUOgrdCslKLbimDiWkO078vYllF6mbreIH8Sv70NfjljGc/QLehKIeRFwiZrvScIYhBpPgn6F2mEd9+iEyhqX+q0y7Gg/iEULMumFRF9rTY+MXs+Hfn+21QwFmyS71splNMbTIycC3/8rYARLS7WY64q5IOa30t0EE0LBO0p3OyEgbjWqHoxWeO92r8oWeYrL1DLcISaYE9pPaagCB7ei2+xwxg2P19lxmzc8+sBBnR+anqg3hfk08Hb4S9OOFTxUsIP6CQAA//+IRsWclQEAAA=="
+        },
+        "mode": 420
+      },
+      {
+        "overwrite": true,
+        "path": "/etc/yum.repos.d/fedora-updates-modular.repo",
+        "contents": {
+          "compression": "gzip",
+          "source": "data:;base64,H4sIAAAAAAAC/9SRT2vbQBDF7/spBA29rSe59GBYSqBJDq2pietCKUWMtSN5q/3H7G7qfPsiyXJNT6HUh1xH2t97j9/3EjVmStIFXSzyD+HRkbonHRir1XSsrpgsYaIn4kpWVztMhNzsK1ltp+fizXArbNU+57gE0OGXtwH1gg7ooiWIZQftSAVrfDnAMRjO2HDMg1MCCEcZrfH9CE5LAGeYA6fFBIscflKTF4E7mH99zxSDmocd8XpeKNuzxLdDiDrFCfK4s6TV7fbL5/rr7aftnWhC8dmRuhEDtu5i1+yp6dW1yM+RFEcnTrebsa7GjDUdomFS7/bD156eVWssLQGAcgOxN8DRyS528LheyYf1g/x4901Om+RZQfmnW+pNrE1bF49PaOxQVN2jTSTE3xalpl3pjG/DP/qsZPVhQFzM61jwEnZH8IscX78moSkUbuglNmeDm/HFfxa4eVyvNpfQNu177d5+BwAA///SEQOWTgUAAA=="
+        },
+        "mode": 420
+      },
+      {
+        "overwrite": true,
+        "path": "/etc/yum.repos.d/fedora-modular.repo",
+        "contents": {
+          "compression": "gzip",
+          "source": "data:;base64,H4sIAAAAAAAC/9yRTavaQBSG9/MrApXuxqNbYShC1UUrlbYWSilhkpzEaeaLMzNW/31JYjXtygvexb27w+HM877D86PGypHkxlVJS/rJrDQo1v0y2w7LbEKoUQY8ImU8mxQyoKTywN50UyItDjH6BUDlflvtZDXFkzReI/hUwBAAWtl0ggsowAgJlxi4gsEFYAaj1Mq2PTwsAIwichSmA9CT+4VlnDpq4O/pO0LvxL8/4qOktx1c3PqjlYXGSiz3Xz/l35Yf9ytWumSjQTHv8ysZZY4nrwjHR11M3vimPGDZihmLZ4+CvGHX3bwbWzyLWmlcAADGEnyrgLzhjW/g827LN7sN/7D6zi+FR0X5rWNolc9VnScrj1LprrBYSx2Qsf/c8QqL1ChbuydZzHj2vnv4fDb7XhAJ8XFWe+Y9bmcvUGRwiUq8x+KX/vLR6ob8BxsboK9E2Z8AAAD//4CpY003BQAA"
+        },
+        "mode": 420
+      },
+      {
+        "overwrite": true,
+        "path": "/etc/microshift/config.yaml",
+        "contents": {
+          "compression": "gzip",
+          "source": "data:;base64,H4sIAAAAAAAC/0yMvQ7CMAyE9zyFlT0/BcSQlS4sDLyBSY2I5MbICX1+1AqkLqfT9+nOOWcm7DgWTRAW1MDlEeaSVdqrPLtRYWrJADjIUrsKvxkrbaDKRGaNG86UwGZRkmZN5k/rpOvqVy/X8Z7ADtGfDj76GIazNQCNdCmZdva4s1NtOzrEjcmMpab/r2fJyOYbAAD//xLpBpDGAAAA"
+        },
+        "mode": 420
+      }
+    ]
+  },
+  "systemd": {
+    "units": [
+      {
+        "contents": "[Unit]\nDescription=MicroShift Containerized\nDocumentation=man:podman-generate-systemd(1)\nWants=network-online.target crio.service\nAfter=network-online.target crio.service\nRequiresMountsFor=%t/containers\n\n[Service]\nEnvironment=PODMAN_SYSTEMD_UNIT=%n\nRestart=on-failure\nTimeoutStopSec=70\nExecStartPre=/usr/bin/mkdir -p /var/lib/kubelet ; /usr/bin/mkdir -p /var/hpvolumes\nExecStartPre=/bin/rm -f %t/%n.ctr-id\nExecStart=/bin/podman run \\\n  --cidfile=%t/%n.ctr-id \\\n  --cgroups=no-conmon \\\n  --rm \\\n  --replace \\\n  --sdnotify=container \\\n  --label io.containers.autoupdate=registry \\\n  --network=host \\\n  --privileged \\\n  -d \\\n  --name microshift \\\n  -v /var/hpvolumes:/var/hpvolumes:z,rw,rshared \\\n  -v /var/run/crio/crio.sock:/var/run/crio/crio.sock:rw,rshared \\\n  -v microshift-data:/var/lib/microshift:rw,rshared \\\n  -v /var/lib/kubelet:/var/lib/kubelet:z,rw,rshared \\\n  -v /var/log:/var/log \\\n  -v /etc:/etc quay.io/microshift/microshift:latest\nExecStop=/bin/podman stop --ignore --cidfile=%t/%n.ctr-id\nExecStopPost=/bin/podman rm -f --ignore --cidfile=%t/%n.ctr-id\nType=notify\nNotifyAccess=all\n\n[Install]\nWantedBy=multi-user.target default.target\n",
+        "enabled": false,
+        "name": "microshift.service"
+      }
+    ]
+  }
+}

@@ -1,0 +1,93 @@
+variant: fcos
+version: 1.4.0
+passwd:
+  users:
+    - name: core
+      password_hash: "$y$j9T$fYArA8LEcBIzP.sNMpMb3/$LcOluQ525/l0CckQ82m7jtm/qObHmYQECnRX2RD3OT1"
+      ssh_authorized_keys:
+        - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCW7lpNQJQbhYuGYQRfpNFXrUuRARphlRDUyJaEfHuqvQvdSnsU0TIbB7mjXc6vmRHTkxOaZtWhhLQX0ybRxTZvfSoJNWh9nGvcJP60r1awQ5IPdfGW4gYFUYZcbNZe8HAdAb9XRruid2p9wct/mIikg80cRj9aYm46eIP2Ibilx5GUaae/2/yvPkLVGvA3nYnpSlxS4nQrqhplsIGIdpxJsR1O0Zpy1RBbxyADk3xxg/8FddW7H+XX33ECPlL1o6tZW6EQiI6Xa77Ep5xWCsY4NIPNr/02sCB/54DN7C417mDqJ3Pw7685koXLFo6aLCCB1RNpvftbDVFYa4T2ygww8K7aKG7ALJCe+OPpBegXUU/jtWUpOgIq+vOxfUbBhlQkyiXLLeujznuV7XrAztTQtpgBrKyMC3QDIECO5/vLVvITKK+3s30uMDM7kjrky9Ng6Zfbi6ThughpJYCqrWAyPM53wxeVJK1QVTG5EBTFO2grPjbBoLMyzQbmHa7vpwE= root@microshift.example.com
+      groups:
+        - wheel
+storage:
+  directories:
+    - path: /var/lib/microshift
+    - path: /var/lib/kubelet
+    - path: /var/hpvolumes
+    - path: /var/home/core/bin
+      overwrite: true
+  files:
+    - path: /etc/ssh/sshd_config.d/20-enable-passwords.conf
+      mode: 0644
+      contents:
+        inline: |
+          # Fedora CoreOS disables SSH password login by default.
+          # Enable it.
+          # This file must sort before 40-disable-passwords.conf.
+          PasswordAuthentication yes
+    - path: /etc/hostname
+      mode: 0644
+      overwrite: true
+      contents:
+        inline: coreos
+    - path: /etc/yum.repos.d/group_redhat-et-microshift-fedora-35.repo
+      overwrite: true
+      mode: 0644
+      contents:
+        local: etc/yum.repos.d/group_redhat-et-microshift-fedora-35.repo
+    - path: /etc/yum.repos.d/fedora-updates-modular.repo
+      overwrite: true
+      mode: 0644
+      contents:
+        local: etc/yum.repos.d/fedora-updates-modular.repo
+    - path: /etc/yum.repos.d/fedora-modular.repo
+      overwrite: true
+      mode: 0644
+      contents:
+        local: etc/yum.repos.d/fedora-modular.repo
+    - path: /etc/microshift/config.yaml
+      overwrite: true
+      mode: 0644
+      contents:
+        local: etc/microshift/config.yaml
+systemd:
+  units:
+    - name: microshift.service
+      enabled: false
+      contents: |
+        [Unit]
+        Description=MicroShift Containerized
+        Documentation=man:podman-generate-systemd(1)
+        Wants=network-online.target crio.service
+        After=network-online.target crio.service
+        RequiresMountsFor=%t/containers
+
+        [Service]
+        Environment=PODMAN_SYSTEMD_UNIT=%n
+        Restart=on-failure
+        TimeoutStopSec=70
+        ExecStartPre=/usr/bin/mkdir -p /var/lib/kubelet ; /usr/bin/mkdir -p /var/hpvolumes
+        ExecStartPre=/bin/rm -f %t/%n.ctr-id
+        ExecStart=/bin/podman run \
+          --cidfile=%t/%n.ctr-id \
+          --cgroups=no-conmon \
+          --rm \
+          --replace \
+          --sdnotify=container \
+          --label io.containers.autoupdate=registry \
+          --network=host \
+          --privileged \
+          -d \
+          --name microshift \
+          -v /var/hpvolumes:/var/hpvolumes:z,rw,rshared \
+          -v /var/run/crio/crio.sock:/var/run/crio/crio.sock:rw,rshared \
+          -v microshift-data:/var/lib/microshift:rw,rshared \
+          -v /var/lib/kubelet:/var/lib/kubelet:z,rw,rshared \
+          -v /var/log:/var/log \
+          -v /etc:/etc quay.io/microshift/microshift:latest
+        ExecStop=/bin/podman stop --ignore --cidfile=%t/%n.ctr-id
+        ExecStopPost=/bin/podman rm -f --ignore --cidfile=%t/%n.ctr-id
+        Type=notify
+        NotifyAccess=all
+
+        [Install]
+        WantedBy=multi-user.target default.target
