@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nodered-deployment
+spec:
+  selector:
+    matchLabels:
+      app: nodered
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: nodered
+    spec:
+      securityContext:
+        fsGroup: 1001
+      volumes:
+      - name: nodered-data
+        persistentVolumeClaim:
+          claimName: noderedpvc
+      containers:
+      - name: nodered
+        image: docker.io/karve/nodered:arm64
+        imagePullPolicy: Always
+        command: ["/bin/bash", "-c"]
+        args:
+          - cd /data;
+            echo Installing Nodes;
+            npm install;
+            ls /tmp;
+            ls /data/node_modules/node-red-node-pi-sense-hat/;
+            echo Starting NodeRed;
+            cd /usr/src/node-red;
+            npm start --cache /data/.npm -- --userDir /data;
+        ports:
+        - containerPort: 1880
+        volumeMounts:
+        - name: nodered-data
+          mountPath: /data
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            memory: 128M
+            cpu: 125m
+          limits:
+            memory: 1024M
+            cpu: 1000m
+---
+apiVersion: v1
+kind: Service
+metadata:
+ name: nodered-svc
+ labels:
+   app: nodered
+spec:
+ type: NodePort
+ ports:
+ - port: 1880
+   nodePort: 30080
+ selector:
+   app: nodered
+
