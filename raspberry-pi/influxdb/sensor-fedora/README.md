@@ -1,5 +1,5 @@
-Build the image
+Build the image using podman
 ```
-podman build -it karve/measure-fedora .
-podman push karve/measure-fedora
+podman build -t docker.io/karve/measure-fedora .
+podman push docker.io/karve/measure-fedora
 ```

@@ -1,4 +1,4 @@
-FROM balenalib/raspberrypi4-64
+FROM docker.io/balenalib/raspberrypi4-64
 
 ENV INITSYSTEM on
 

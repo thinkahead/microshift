@@ -1,5 +1,11 @@
-Build the image
+Build the image using docker
 ```
-docker build -it karve/measure .
-docker push karve/measure
+docker build -t karve/measure-balena .
+docker push karve/measure-balena
+```
+
+Build the image using podman 
+```
+podman build -t docker.io/karve/measure-balena .
+podman push docker.io/karve/measure-balena
 ```
