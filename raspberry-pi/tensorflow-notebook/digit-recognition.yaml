@@ -1,0 +1,63 @@
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    run: digit-recognition
+  name: digit-recognition
+spec:
+  initContainers:
+  - name: pull-digit-recognition-sample
+    image: docker.io/alpine/git
+    command: ["sh","-c","apk add wget && wget https://raw.githubusercontent.com/thinkahead/DeveloperRecipes/master/Notebooks/digits.ipynb -O /data/digits.ipynb"]
+    volumeMounts:
+    - name: volume-name
+      mountPath: /data
+  containers:
+  - image: docker.io/jupyter/scipy-notebook:latest
+    imagePullPolicy: IfNotPresent
+    #imagePullPolicy: Always
+    name: pod
+    # mysecretpassword
+    args: ["jupyter", "notebook", "--port", "5001", "--no-browser", "--ip=*", "--NotebookApp.token=", "--NotebookApp.password=sha1:d6941d783443:9f33baf62756660be91b606f0fdf1b57b6d3c6fa"]
+    volumeMounts:
+    - name: volume-name
+      mountPath: /home/jovyan/work
+  dnsPolicy: ClusterFirst
+  restartPolicy: Always
+  volumes:
+    - name: volume-name
+      emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    run: digit-recognition
+  name: digit-recognition-svc
+spec:
+  ports:
+  - port: 5001
+    protocol: TCP
+    targetPort: 5001
+  selector:
+    run: digit-recognition
+  sessionAffinity: None
+  type: ClusterIP
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  labels:
+    run: digit-recognition
+  name: digit-recognition-route
+spec:
+  host: digit-recognition-route-default.cluster.local
+  port:
+    targetPort: 5001
+  to:
+    kind: Service
+    name: digit-recognition-svc
+    weight: 100
+  wildcardPolicy: None
+...
