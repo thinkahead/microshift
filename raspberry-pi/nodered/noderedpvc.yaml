@@ -4,6 +4,7 @@ kind: PersistentVolumeClaim
 metadata:
   name: noderedpvc
 spec:
+  storageClassName: "kubevirt-hostpath-provisioner"
   accessModes:
     - ReadWriteMany
   resources:
