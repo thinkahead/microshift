@@ -1,0 +1,31 @@
+## Stage 1 : build with maven builder image with native capabilities
+FROM ghcr.io/graalvm/graalvm-ce:latest AS build
+RUN gu install native-image
+RUN ldd --version
+RUN microdnf install findutils
+COPY --chown=1001:1001 gradlew /code/gradlew
+COPY --chown=1001:1001 gradle /code/gradle
+COPY --chown=1001:1001 build.gradle /code/
+COPY --chown=1001:1001 settings.gradle /code/
+COPY --chown=1001:1001 gradle.properties /code/
+USER 1001
+WORKDIR /code
+COPY src /code/src
+RUN ./gradlew build -Dquarkus.package.type=native
+
+## Stage 2 : create the docker final image
+FROM registry.access.redhat.com/ubi8/ubi-minimal:8.3
+WORKDIR /work/
+COPY --from=build /code/target/*-runner /work/application
+RUN ldd --version
+
+# set up permissions for user `1001`
+RUN chmod 775 /work /work/application \
+  && chown -R 1001 /work \
+  && chmod -R "g+rwX" /work \
+  && chown -R 1001:root /work
+
+EXPOSE 8080
+USER 1001
+
+CMD ["./application", "-Dquarkus.http.host=0.0.0.0"]
