@@ -160,7 +160,7 @@ install_crio() {
         sudo dnf install -y cri-o cri-tools
       ;;
       "ubuntu")
-	if [ $OS_VERSION == "22.04" ]; then OS_VERSION=21.04; fi
+	#if [ $OS_VERSION == "22.04" ]; then OS_VERSION=21.04; fi
         OS=xUbuntu_$OS_VERSION
         KEYRINGS_DIR=/usr/share/keyrings
         echo "deb [signed-by=$KEYRINGS_DIR/libcontainers-archive-keyring.gpg] https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/$OS/ /" | sudo tee /etc/apt/sources.list.d/devel:kubic:libcontainers:stable.list > /dev/null
