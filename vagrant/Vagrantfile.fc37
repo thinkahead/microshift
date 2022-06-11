@@ -1,0 +1,259 @@
+Vagrant.configure("2") do |config|
+  config.vm.define :rawhide_selinux
+  config.vm.box = "fedora-rawhide-cloud"
+  config.vm.box_url = "https://dl.fedoraproject.org/pub/fedora/linux/development/rawhide/Cloud/x86_64/images/Fedora-Cloud-Base-Vagrant-Rawhide-20220611.n.0.x86_64.vagrant-virtualbox.box"
+
+  config.vm.provider "virtualbox" do |v|
+    # provides 3GB of memory
+    v.memory = 3072
+    # for parallelization
+    v.cpus = 2
+  end
+
+  config.vm.network :forwarded_port, guest: 30036, host: 30036, id: "console"
+  config.vm.network :forwarded_port, guest: 80, host: 80, id: "web"
+
+  config.vm.hostname = 'microshift.example.com'
+  config.vm.provision "shell", inline: <<-SHELL
+dnf module list cri-o
+dnf -y module enable cri-o:1.24
+dnf -y install cri-o cri-tools containernetworking-plugins
+curl https://copr.fedorainfracloud.org/coprs/g/redhat-et/microshift-nightly/repo/fedora-rawhide/group_redhat-et-microshift-nightly-fedora-rawhide.repo -o /etc/yum.repos.d/microshift-nightly-fedora-rawhide.repo 2>/dev/null
+
+cat << EOF > /etc/cni/net.d/100-crio-bridge.conf
+{
+    "cniVersion": "0.4.0",
+    "name": "crio",
+    "type": "bridge",
+    "bridge": "cni0",
+    "isGateway": true,
+    "ipMasq": true,
+    "hairpinMode": true,
+    "ipam": {
+        "type": "host-local",
+        "routes": [
+            { "dst": "0.0.0.0/0" }
+        ],
+        "ranges": [
+            [{ "subnet": "10.42.0.0/24" }]
+        ]
+    }
+}
+EOF
+
+#dnf -y update
+dnf -y install firewalld wget
+#wget https://download-ib01.fedoraproject.org/pub/fedora/linux/releases/36/Everything/x86_64/os/Packages/c/cri-o-1.23.2-1.fc36.x86_64.rpm
+#dnf -y install cri-o-1.23.2-1.fc36.x86_64.rpm
+dnf install -y microshift
+wget https://github.com/openshift/microshift/releases/download/nightly/microshift-linux-amd64 -O /usr/bin/microshift > /dev/null 2>&1
+chmod +x /usr/bin/microshift
+restorecon -rv /usr/bin/microshift
+
+hostnamectl set-hostname microshift.example.com # the host needs a fqdn domain for microshift to work well
+
+systemctl enable firewalld --now
+firewall-cmd --zone=public --permanent --add-port=6443/tcp
+firewall-cmd --zone=public --permanent --add-port=30000-32767/tcp
+firewall-cmd --zone=public --permanent --add-port=2379-2380/tcp
+firewall-cmd --zone=public --add-masquerade --permanent
+firewall-cmd --zone=public --add-port=80/tcp --permanent
+firewall-cmd --zone=public --add-port=443/tcp --permanent
+firewall-cmd --zone=public --add-port=10250/tcp --permanent
+firewall-cmd --zone=public --add-port=10251/tcp --permanent
+firewall-cmd --permanent --zone=trusted --add-source=10.42.0.0/16
+firewall-cmd --reload
+firewall-cmd --permanent --change-zone=eth0 --zone=public
+
+systemctl enable crio
+systemctl start crio
+systemctl enable microshift
+systemctl start microshift
+
+# Install kubectl
+ARCH=amd64
+curl -LO https://storage.googleapis.com/kubernetes-release/release/`curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt`/bin/linux/$ARCH/kubectl 2>/dev/null
+chmod +x kubectl
+mv kubectl /usr/local/bin
+
+# Install the oc client
+ARCH=x86_64
+wget -q https://mirror.openshift.com/pub/openshift-v4/$ARCH/clients/ocp/candidate/openshift-client-linux.tar.gz
+mkdir tmp;cd tmp
+tar -zxvf ../openshift-client-linux.tar.gz
+mv -f oc /usr/local/bin
+cd ..;rm -rf tmp
+rm -f openshift-client-linux.tar.gz
+
+echo "export KUBECONFIG=/var/lib/microshift/resources/kubeadmin/kubeconfig" >> /root/.bash_profile
+
+# Install helm
+curl -o helm-v3.5.2-linux-amd64.tar.gz https://get.helm.sh/helm-v3.5.2-linux-amd64.tar.gz 2>/dev/null
+tar -zxvf helm-v3.5.2-linux-amd64.tar.gz
+mv -f linux-amd64/helm /usr/local/bin
+rm -rf linux-amd64/
+rm -f helm-v3.5.2-linux-amd64.tar.gz
+
+# Install odo
+OS="$(uname | tr '[:upper:]' '[:lower:]')"
+ARCH="$(uname -m | sed -e 's/x86_64/amd64/' -e 's/\(arm\)\(64\)\?.*/\1\2/' -e 's/aarch64$/arm64/')"
+curl -L https://developers.redhat.com/content-gateway/rest/mirror/pub/openshift-v4/clients/odo/latest/odo-$OS-$ARCH -o odo
+install odo /usr/local/bin/
+rm -f odo
+
+dnf install -y git
+
+# Create the yaml for creating the persistent volume for mysql
+cat << EOF > /root/hostpathpv.yaml
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: hostpath-provisioner
+spec:
+  #storageClassName: "kubevirt-hostpath-provisioner"
+  capacity:
+    storage: 8Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: "/var/hpvolumes/mysql"
+EOF
+
+cat << EOF > /root/secpatch.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysql
+spec:
+  template:
+    spec:
+      containers:
+      - name: mysql
+        securityContext:
+          privileged: true
+      initContainers:
+      - name: remove-lost-found
+        securityContext:
+          privileged: true
+EOF
+
+# Run the sql-sample.sh after the VM boots and microshift is started
+cat << EOF > /root/sql-sample.sh
+chmod 600 /var/lib/microshift/resources/kubeadmin/kubeconfig
+rm -rf /var/hpvolumes/mysql
+mkdir /var/hpvolumes/mysql
+#chown systemd-oom:systemd-oom /var/hpvolumes/mysql
+oc delete -f hostpathpv.yaml
+helm repo add stable https://charts.helm.sh/stable
+helm install mysql stable/mysql --set mysqlRootPassword=secretpassword,mysqlUser=my-user,mysqlPassword=my-password,mysqlDatabase=my-database --set persistence.enabled=true --set storageClass=kubevirt-hostpath-provisioner
+oc apply -f hostpathpv.yaml
+sleep 1
+oc apply -f secpatch.yaml
+EOF
+chmod +x /root/sql-sample.sh
+
+cat << EOF > /root/w.sh
+watch "kubectl get nodes;kubectl get pods -A;kubectl get pv,pvc -n default;crictl images;crictl pods"
+EOF
+chmod +x /root/w.sh
+
+cat << EOF > /root/okd-web-console-install.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: console-deployment
+  namespace: kube-system
+  labels:
+    app: console
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: console
+  template:
+    metadata:
+      labels:
+        app: console
+    spec:
+      containers:
+        - name: console-app
+          image: quay.io/openshift/origin-console:4.2
+          env:
+            - name: BRIDGE_USER_AUTH
+              value: disabled # no authentication required
+            - name: BRIDGE_K8S_MODE
+              value: off-cluster
+            - name: BRIDGE_K8S_MODE_OFF_CLUSTER_ENDPOINT
+              value: https://kubernetes.default #master api
+            - name: BRIDGE_K8S_MODE_OFF_CLUSTER_SKIP_VERIFY_TLS
+              value: "true" # no tls enabled
+            - name: BRIDGE_K8S_AUTH
+              value: bearer-token
+            - name: BRIDGE_K8S_AUTH_BEARER_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: console-token-ppfc2 # console serviceaccount token
+                  key: token
+
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: console-np-service
+  namespace: kube-system
+spec:
+  selector:
+    app: console
+  type: NodePort # nodePort configuration
+  ports:
+    - name: http
+      port: 9000
+      targetPort: 9000
+      nodePort: 30036
+      protocol: TCP
+...
+EOF
+
+cat << EOF > /root/okd-web-console-install.sh
+kubectl create serviceaccount console -n kube-system
+kubectl create clusterrolebinding console --clusterrole=cluster-admin --serviceaccount=kube-system:console -n kube-system
+sa=\\$(kubectl get serviceaccount console --namespace=kube-system -o jsonpath='{.imagePullSecrets[0].name}' -n kube-system)
+tokenname=\\$(kubectl get secret \\$sa -n kube-system -o jsonpath='{.metadata.ownerReferences[0].name}')
+sed -i "s/name: .* # console serviceaccount token/name: \\$tokenname # console serviceaccount token/" okd-web-console-install.yaml
+#oc get secret -n \\$sa -o yaml
+kubectl create -f okd-web-console-install.yaml
+sleep 2
+oc expose svc console-np-service -n kube-system
+EOF
+chmod +x /root/okd-web-console-install.sh
+
+cat << EOF > /root/odo-sample.sh
+odo preference set ConsentTelemetry false -f
+odo project delete node-red -f -w
+rm -rf node-red
+git clone https://github.com/node-red/node-red.git && cd node-red
+#git clone https://github.com/phattp/nodejs-weather-app && cd nodejs-weather-app
+#git clone https://github.com/odo-devfiles/nodejs-ex.git && cd nodejs-ex
+odo project create node-red
+odo create nodejs
+odo url create test --port 1880
+odo url delete http-3000 -f
+sed -i 's/npm start/npm install \\&\\& npm run build \\&\\& npm start/' devfile.yaml
+odo push
+odo url list
+#oc expose \\$(oc get svc -o name)
+oc get po,svc,routes
+oc logs \\$(oc get deployments -o name) -f
+#Expose port 80 on the VirtualBox microshift VM
+#Add the following to /etc/hosts on your Mac
+#127.0.0.0 xxx-myproject.cluster.local
+#http://xxx-myproject.cluster.local
+EOF
+chmod +x /root/odo-sample.sh
+# This patch may be required
+#export KUBECONFIG=/var/lib/microshift/resources/kubeadmin/kubeconfig
+#oc patch daemonset/dns-default -n openshift-dns -p '{"spec": {"template": {"spec": {"containers": [{"name": "dns","resources": {"requests": {"cpu": "80m","memory": "90Mi"}}}]}}}}'
+  SHELL
+
+end
