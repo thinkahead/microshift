@@ -15,4 +15,10 @@
 13. [MicroShift and KubeVirt on Raspberry Pi 4 with Ubuntu Server 22.04](https://community.ibm.com/community/user/cloud/blogs/alexei-karve/2022/04/17/microshift-13)
 14. [MicroShift and KubeVirt on Raspberry Pi 4 with Rocky Linux 8.5](https://community.ibm.com/community/user/cloud/blogs/alexei-karve/2022/04/24/microshift-14)
 15. [MicroShift and KubeVirt on Raspberry Pi 4 with openSUSE](https://community.ibm.com/community/user/cloud/blogs/alexei-karve/2022/05/08/microshift-15)
-
+16. [MicroShift and KubeVirt on Raspberry Pi 4 with Oracle Linux 8.5](https://community.ibm.com/community/user/cloud/blogs/alexei-karve/2022/05/13/microshift-16)
+17. [MicroShift and KubeVirt on Raspberry Pi 4 with AlmaLinux 8.5](https://community.ibm.com/community/user/cloud/blogs/alexei-karve/2022/05/17/microshift-17)
+18. [MicroShift and KubeVirt on Raspberry Pi 4 with Manjaro 22.04](https://community.ibm.com/community/user/cloud/blogs/alexei-karve/2022/05/26/microshift-18)
+19. [MicroShift and KubeVirt on Raspberry Pi 4 with Kali Linux](https://community.ibm.com/community/user/cloud/blogs/alexei-karve/2022/05/30/microshift-19)
+20. [MicroShift and KubeVirt on Raspberry Pi 4 with Arch Linux](https://community.ibm.com/community/user/cloud/blogs/alexei-karve/2022/05/30/microshift-20)
+21. [MicroShift and KubeVirt on Raspberry Pi 4 with Fedora 36 Silverblue](https://community.ibm.com/community/user/cloud/blogs/alexei-karve/2022/06/20/microshift-21)
+22. [MicroShift and KubeVirt on Raspberry Pi 4 with EndeavourOS](https://community.ibm.com/community/user/cloud/blogs/alexei-karve/2022/06/27/microshift-22)
