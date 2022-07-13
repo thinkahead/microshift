@@ -5,7 +5,6 @@ metadata:
 spec:
   containers:
   - name: nginx
-    image: nginx
-  nodeName: rpi.example.com
+    image: docker.io/library/nginx:latest
+  #nodeName: rpi.example.com
   runtimeClassName: kata
-
