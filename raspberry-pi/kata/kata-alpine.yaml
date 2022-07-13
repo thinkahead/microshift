@@ -1,0 +1,16 @@
+kind: Pod
+apiVersion: v1
+metadata:
+  name: kata-alpine
+spec:
+  containers:
+    - name: kata-alpine
+      image: karve/alpine-sshclient:arm64
+      command: ["/bin/sh", "-ec", "while :; do echo '.'; sleep 5 ; done"]
+      #securityContext:
+      #  privileged: true
+  restartPolicy: Never
+  nodeName: rpi.example.com
+  runtimeClassName: kata
+  
+
