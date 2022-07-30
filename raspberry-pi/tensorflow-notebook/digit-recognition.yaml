@@ -14,7 +14,7 @@ spec:
     - name: volume-name
       mountPath: /data
   containers:
-  - image: docker.io/jupyter/scipy-notebook:latest
+  - image: docker.io/jupyter/scipy-notebook:aarch64-latest
     imagePullPolicy: IfNotPresent
     #imagePullPolicy: Always
     name: pod
@@ -23,6 +23,7 @@ spec:
     volumeMounts:
     - name: volume-name
       mountPath: /home/jovyan/work
+  #runtimeClassName: kata
   dnsPolicy: ClusterFirst
   restartPolicy: Always
   volumes:
