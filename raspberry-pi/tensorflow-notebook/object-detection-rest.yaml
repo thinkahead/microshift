@@ -6,7 +6,7 @@ metadata:
   name: notebook
 spec:
   initContainers:
-  - name: pull-licence-place-workshop
+  - name: pull-object-detection-workshop
     image: docker.io/alpine/git
     command: ["git", "clone", "https://github.com/thinkahead/object-detection-rest.git", "/data"]
     #command: ["git", "clone", "https://github.com/rh-aiservices-bu/object-detection-rest.git", "/data"]
