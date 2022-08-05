@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: rpi-sci-hat
+spec:
+  containers:
+  - name: rpi-sci-hat
+    image: docker.io/kproche/rpi-sci-hat:stream8
+    command: ["/bin/sh","-c"]
+    args: ["sleep 36000"]
+    securityContext:
+      privileged: true
