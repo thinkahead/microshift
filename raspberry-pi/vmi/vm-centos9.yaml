@@ -1,0 +1,65 @@
+apiVersion: kubevirt.io/v1alpha3
+kind: VirtualMachine
+metadata:
+ labels:
+   app: vm-centos9
+ name: vm-centos9
+ namespace: default
+spec:
+ running: false
+ template:
+   metadata:
+     labels:
+       kubevirt.io/domain: vm-centos9
+       kubevirt.io/size: tiny
+       vm.kubevirt.io/name: vm-centos9
+       flavor.template.kubevirt.io/tiny: 'true'
+       workload.template.kubevirt.io/server: 'true'
+   spec:
+     domain:
+       cpu:
+         cores: 1
+         sockets: 1
+         threads: 1
+       devices:
+         disks:
+           - bootOrder: 1
+             disk:
+               bus: virtio
+             name: containerdisk
+           - disk:
+               bus: virtio
+             name: cloudinitdisk
+         interfaces:
+           - masquerade: {}
+             model: virtio
+             name: default
+         networkInterfaceMultiqueue: true
+         rng: {}
+       machine:
+         type: ""
+       resources:
+         requests:
+           memory: 1Gi
+     #evictionStrategy: LiveMigrate
+     hostname: vm-centos9
+     networks:
+       - name: default
+         pod: {}
+     terminationGracePeriodSeconds: 180
+     volumes:
+       - containerDisk:
+           image: docker.io/karve/centos-stream-genericcloud-9-20221206:arm64
+         name: containerdisk
+       - cloudInitNoCloud:
+           userData: |-
+             #cloud-config
+             password: centos
+             chpasswd: { expire: False }
+             ssh_pwauth: True
+             disable_root: false
+             ssh_authorized_keys:
+             - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDrrXNkuuZ04EO6dUDzSCV3a35Is+BcMsUFSNBkInsy0PaK0sZBrA7PxV/5M1Pkwc+h4BvmBVAoXn/GTZbOhFWYTaOIPjbW6eKxwz1IQQE2uoqgTRo6WsF6BIpnOl0b59bnQGNHayx0epDdZI02WKygsj5I013TNxEwjBeYExkax1COatBUmK4t4Q8xcN+CoGgzIizuHFMjJt2AurHBTvRX8bG38OlB61liL1CDqU+mEZZeu8jucJJEU/umX3WtPRl/1De7d6vYFZvF0m7QioqB/eKwoBfzgmLf0FT9zTgJMlelKZ5rfy+1Hpzj8YsYG7tbWz1B4hnAZUngqoFdOGKP
+             runcmd:
+             - sudo yum -y update
+         name: cloudinitdisk
