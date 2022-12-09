@@ -1,0 +1,72 @@
+apiVersion: v1
+kind: Service
+metadata:
+   name: mongodb #service name
+   labels:
+     app: mongodb
+spec:
+   selector:
+     app: mongodb
+   ports:
+     - protocol: TCP
+       name: http
+       port: 27017 #container service port
+       targetPort: 27017 #container target port
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+    name: mongodb-secret #name of secret
+type: Opaque #key-value pairs secret type
+data:
+   mongodb-root-username: cm9vdA==
+   mongodb-root-password: bW9uZ29kYi1wYXNzd29yZA== #base64 encoded value
+
+--- 
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mongodb # The name of the StatefulSet
+spec:
+  serviceName: mongodb
+  selector:
+    matchLabels:
+      app: mongodb
+  replicas: 1 # Indicates this StatefulSet should only create one instance of the MongoDB database
+  template:
+    metadata:
+      labels:
+        app: mongodb
+    spec:
+      serviceAccount: mongodb
+      serviceAccountName: mongodb
+      containers:
+      - name: mongodb # The name of the MongoDB container
+        image: docker.io/arm64v8/mongo:4.4.18 # The official image of the MongoDB database
+        imagePullPolicy: "IfNotPresent"
+        ports:
+        - containerPort: 27017 # The port number MongoDB listens on
+        env:
+        - name: MONGO_INITDB_ROOT_USERNAME # mongodb username
+          valueFrom: 
+            secretKeyRef:
+              name: mongodb-secret
+              key: mongodb-root-username #the key that holds the mongodb username
+        - name: MONGO_INITDB_ROOT_PASSWORD # mongodb-password
+          valueFrom:
+            secretKeyRef:
+              name: mongodb-secret
+              key: mongodb-root-password #the key that holds the mongodb password
+        volumeMounts:
+          - mountPath: /data/db
+            name: datadir
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 1001
+      securityContext:
+        fsGroup: 1001
+      volumes:
+      - name: datadir
+        persistentVolumeClaim:
+          claimName: mongodb # Indicates the mongodb database should use a PVC mongodb
