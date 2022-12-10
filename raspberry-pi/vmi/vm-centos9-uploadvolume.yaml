@@ -1,7 +1,7 @@
 apiVersion: kubevirt.io/v1alpha3
 kind: VirtualMachine
 metadata:
-  name: centos9instance1
+  name: centos9instance2
   namespace: default
 spec:
   runStrategy: "RerunOnFailure"
@@ -28,7 +28,7 @@ spec:
       terminationGracePeriodSeconds: 0
       volumes:
       - dataVolume:
-          name: centos9instance1
+          name: centos9instance2
         name: datavolumedisk1
       - cloudInitNoCloud:
           userData: |-
@@ -44,7 +44,7 @@ spec:
         name: cloudinitdisk
   dataVolumeTemplates:
   - metadata:
-      name: centos9instance1
+      name: centos9instance2
       annotations:
         kubevirt.io/provisionOnNode: microshift.example.com
     spec:
@@ -59,4 +59,5 @@ spec:
       source:
         pvc:
           namespace: default
-          name: centos9-dv
+          name: example-upload-dv
+
