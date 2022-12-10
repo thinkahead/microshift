@@ -1,0 +1,19 @@
+# This example assumes you are using a default storage class
+apiVersion: cdi.kubevirt.io/v1beta1
+kind: DataVolume
+metadata:
+  name: centos9-dv
+spec:
+  source:
+      http:
+         url: "https://cloud.centos.org/altarch/9-stream/aarch64/images/CentOS-Stream-GenericCloud-9-20221206.0.aarch64.qcow2"
+  pvc:
+    metadata:
+      annotations:
+        volume.beta.kubernetes.io/storage-provisioner: kubevirt.io/hostpath-provisioner
+        volume.kubernetes.io/selected-node: microshift.example.com
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 10Gi
