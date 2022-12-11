@@ -1,0 +1,63 @@
+apiVersion: kubevirt.io/v1alpha3
+kind: VirtualMachine
+metadata:
+  name: ubuntujammy1
+  namespace: default
+spec:
+  runStrategy: "RerunOnFailure"
+  #running: true
+  template:
+    metadata:
+      labels:
+        kubevirt.io/vm: centos9
+    spec:
+      domain:
+        devices:
+          disks:
+          - disk:
+              bus: virtio
+            name: datavolumedisk1
+          - disk:
+              bus: virtio
+            name: cloudinitdisk
+        machine:
+          type: ""
+        resources:
+          requests:
+            memory: 1Gi
+      terminationGracePeriodSeconds: 0
+      volumes:
+      - dataVolume:
+          name: ubuntujammy1
+        name: datavolumedisk1
+      - cloudInitNoCloud:
+          userData: |-
+            #cloud-config
+            password: ubuntu
+            chpasswd: { expire: False }
+            ssh_pwauth: True
+            disable_root: false
+            ssh_authorized_keys:
+            - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDrrXNkuuZ04EO6dUDzSCV3a35Is+BcMsUFSNBkInsy0PaK0sZBrA7PxV/5M1Pkwc+h4BvmBVAoXn/GTZbOhFWYTaOIPjbW6eKxwz1IQQE2uoqgTRo6WsF6BIpnOl0b59bnQGNHayx0epDdZI02WKygsj5I013TNxEwjBeYExkax1COatBUmK4t4Q8xcN+CoGgzIizuHFMjJt2AurHBTvRX8bG38OlB61liL1CDqU+mEZZeu8jucJJEU/umX3WtPRl/1De7d6vYFZvF0m7QioqB/eKwoBfzgmLf0FT9zTgJMlelKZ5rfy+1Hpzj8YsYG7tbWz1B4hnAZUngqoFdOGKP
+            runcmd:
+            - sudo apt-get update
+        name: cloudinitdisk
+  dataVolumeTemplates:
+  - metadata:
+      name: ubuntujammy1
+      annotations:
+        kubevirt.io/provisionOnNode: microshift.example.com
+    spec:
+      pvc:
+        accessModes:
+        - ReadWriteOnce
+        resources:
+          requests:
+            storage: 10Gi
+        storageClassName: kubevirt-hostpath-provisioner
+        volumeMode: Filesystem
+      source:
+        pvc:
+          namespace: default
+          name: example-upload-dv
+
