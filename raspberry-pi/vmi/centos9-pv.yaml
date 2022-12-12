@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  annotations:
+    # volume.beta.kubernetes.io/storage-provisioner: kubevirt.io/hostpath-provisioner
+    volume.kubernetes.io/selected-node: microshift.example.com
+  name: centos9-image
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+  storageClassName: kubevirt-hostpath-provisioner
+  volumeMode: Filesystem
+
