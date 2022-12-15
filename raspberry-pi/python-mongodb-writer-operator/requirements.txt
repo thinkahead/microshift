@@ -1,0 +1,3 @@
+kopf==1.33.0
+kubernetes==18.20.0
+pymongo

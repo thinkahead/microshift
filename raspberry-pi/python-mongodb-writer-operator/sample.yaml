@@ -1,0 +1,10 @@
+apiVersion: demo.karve.com/v1
+kind: MongodbWriter
+metadata:
+  name: sample-student
+  namespace: default
+spec:
+  table: students
+  name: alex
+  age: 23
+  country: canada

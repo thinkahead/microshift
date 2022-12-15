@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mongodb-writer-operator
+  namespace: default
+  labels:
+    app: mongodb-writer
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mongodb-writer
+  template:
+    metadata:
+      labels:
+        app: mongodb-writer
+    spec:
+      serviceAccountName: mongodb-writer
+      containers:
+      - name: mongodb-writer
+        image: docker.io/karve/mongodb-writer:latest
+        imagePullPolicy: IfNotPresent
+        env: ##  preferably load this via a configmap or/and secret instead
+          - name: MONGODB_HOST
+            value: mongodb
+          - name: MONGODB_PORT
+            value: "27017"
+          - name: MONGODB_USERNAME
+            value: root
+          - name: PSQL_PASSWORD
+            value: mongodb-password
+          - name: PSQL_DB
+            value: school
