@@ -27,7 +27,7 @@ spec:
             value: "27017"
           - name: MONGODB_USERNAME
             value: root
-          - name: PSQL_PASSWORD
+          - name: MONGODB_PASSWORD
             value: mongodb-password
-          - name: PSQL_DB
+          - name: MONGODB_DB
             value: school

@@ -2,7 +2,7 @@ import pprint
 from pymongo import MongoClient
 
 class MongoDBClient:
-    def __init__(self, host, username, password, db, port=27017):
+    def __init__(self, host, username, password, db, port="27017"):
         self.host = host
         self.username = username
         self.__password = password
@@ -17,13 +17,17 @@ class MongoDBClient:
     def get_connection(self):
         return self.__connection
     
-    # define other getters/setters accordingly
-
     def insert_row(self, table, primary_id, name, age, country):
         self.connect_if_not_connected()
         db_connection = self.get_connection()
         student={"id":primary_id,"name":name,"age":age,"country":country}
         db_connection[table].insert_one(student)
+
+    def update_row(self, table, primary_id, name, age, country):
+        self.connect_if_not_connected()
+        db_connection = self.get_connection()
+        student={"id":primary_id,"name":name,"age":age,"country":country}
+        db_connection[table].update_one({"id":primary_id},{"$set":student})
 
     def delete_row(self, table, primary_id):
         self.connect_if_not_connected()
