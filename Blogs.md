@@ -1,5 +1,5 @@
 # Blogs
-**Computing at the Edge for Constrained Devices with MicroShift** (29-part series) 2021-22
+**Computing at the Edge for Constrained Devices with MicroShift** (30-part series) 2021-23
 1. [Working with MicroShift on MacBook Pro](https://community.ibm.com/community/user/cloud/blogs/alexei-karve/2021/11/23/microshift-1)
 2. [Setting up the Jetson Nano and MicroShift Dependencies](https://community.ibm.com/community/user/cloud/blogs/alexei-karve/2021/11/23/microshift-2)
 3. [Building and Running MicroShift on a Jetson Nano](https://community.ibm.com/community/user/cloud/blogs/alexei-karve/2021/11/23/microshift-3)
